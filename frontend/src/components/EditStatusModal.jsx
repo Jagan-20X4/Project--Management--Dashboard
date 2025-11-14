@@ -776,6 +776,165 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
     }
   };
 
+  // Helper function to format date as "14th Nov 2025"
+  const formatDateForEmail = (date) => {
+    if (!date) return "";
+    let d;
+    // Handle both Date objects and date strings
+    if (date instanceof Date) {
+      d = date;
+    } else if (typeof date === 'string') {
+      // If it's a date string in yyyy-mm-dd format, parse it correctly
+      if (date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        const [year, month, day] = date.split('-').map(Number);
+        d = new Date(year, month - 1, day);
+      } else {
+        d = new Date(date);
+      }
+    } else {
+      return "";
+    }
+    
+    if (isNaN(d.getTime())) return "";
+    
+    const day = d.getDate();
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const month = monthNames[d.getMonth()];
+    const year = d.getFullYear();
+    
+    // Add ordinal suffix
+    const getOrdinalSuffix = (n) => {
+      const s = ["th", "st", "nd", "rd"];
+      const v = n % 100;
+      return s[(v - 20) % 10] || s[v] || s[0];
+    };
+    
+    return `${day}${getOrdinalSuffix(day)} ${month} ${year}`;
+  };
+
+  // Helper function to map status to email format
+  const mapStatusForEmail = (status) => {
+    switch (status) {
+      case "Completed":
+        return "Completed";
+      case "In Progress":
+        return "In Progress";
+      case "Yet to Start":
+        return "Pending";
+      case "Delayed":
+        return "Pending";
+      default:
+        return "Pending";
+    }
+  };
+
+  // Helper function to format date value for email (dd-mm-yyyy or "-")
+  const formatDateValueForEmail = (dateValue) => {
+    if (!dateValue || dateValue === "" || dateValue === "(empty)") return "-";
+    // If it's in yyyy-mm-dd format, convert to dd-mm-yyyy
+    const datePattern = /^(\d{4})-(\d{2})-(\d{2})$/;
+    const match = dateValue.match(datePattern);
+    if (match) {
+      const [, year, month, day] = match;
+      return `${day}-${month}-${year}`;
+    }
+    return dateValue;
+  };
+
+  // Function to handle Send Mail button click
+  const handleSendMail = () => {
+    if (!project) return;
+
+    // Collect email addresses (project owner + business owner primary + alternate emails)
+    const emailAddresses = [];
+    if (project.projectOwnerPrimaryEmail) {
+      emailAddresses.push(project.projectOwnerPrimaryEmail);
+    }
+    if (project.projectOwnerAlternateEmail) {
+      emailAddresses.push(project.projectOwnerAlternateEmail);
+    }
+    if (project.businessOwnerPrimaryEmail) {
+      emailAddresses.push(project.businessOwnerPrimaryEmail);
+    }
+    if (project.businessOwnerAlternateEmail) {
+      emailAddresses.push(project.businessOwnerAlternateEmail);
+    }
+
+    // If no emails found, show warning
+    if (emailAddresses.length === 0) {
+      toast.warning("No email addresses found for Project Owner or Business Owner.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    // Format current date for subject (use local date to avoid timezone issues)
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const currentDate = formatDateForEmail(todayStr);
+    
+    // Build subject: [PMO Update] Project <ID> - <Name> - Status Logged on <formatted date>
+    const subject = `[PMO Update] Project ${project.projectId} - ${project.projectName} - Status Logged on ${currentDate}`;
+
+    // Build email body with proper formatting
+    const currentDateForBody = currentDate;
+    const overallRemarks = overallProjectSummary || "-";
+    
+    // Build Project Details section
+    let body = `Project Details:\n`;
+    body += `Project Name: ${project.projectName} (ID: ${project.projectId}), `;
+    body += `Business Dept: ${project.department || "-"}, `;
+    body += `IT Owner: ${project.techDepartment || "-"}, `;
+    body += `Overall Remarks for ${currentDateForBody}: ${overallRemarks}\n\n`;
+    
+    // Build Milestone Updates section
+    body += `Milestone Updates:\n`;
+    
+    // Define stage order (all stages must be included)
+    const stageOrder = [
+      "Concept",
+      "Business case approval",
+      "IT Infra and security",
+      "Vendor onboarding",
+      "Execution & Delivery",
+      "UAT",
+      "Go-Live and support"
+    ];
+    
+    // Build stage updates in the specified order - include ALL fields for each stage
+    stageOrder.forEach((stageName) => {
+      const stage = stages.find((s) => s.name === stageName);
+      
+      // Format all required fields: Planned Start, Planned End, Actual Start, Actual End, Status, Remarks
+      const plannedStart = formatDateValueForEmail(stage?.startDate || "");
+      const plannedEnd = formatDateValueForEmail(stage?.endDate || "");
+      const actualStart = formatDateValueForEmail(stage?.actualStartDate || "");
+      const actualEnd = formatDateValueForEmail(stage?.actualEndDate || "");
+      const status = stage ? mapStatusForEmail(stage.status) : "Pending";
+      const remarks = (stage?.remarks && stage.remarks.trim() !== "") ? stage.remarks : "-";
+      
+      // Format: - Stage Name: Planned Start: ..., Planned End: ..., Actual Start: ..., Actual End: ..., Status: ..., Remarks: ...
+      body += `- ${stageName}: Planned Start: ${plannedStart}, Planned End: ${plannedEnd}, Actual Start: ${actualStart}, Actual End: ${actualEnd}, Status: ${status}, Remarks: ${remarks}\n`;
+    });
+
+    // Use Outlook web deep link to avoid truncation issues
+    // Format: https://outlook.office.com/mail/deeplink/compose?to=...&subject=...&body=...
+    // Join emails with semicolons (Outlook web accepts semicolon-separated emails)
+    const toEmail = emailAddresses.join(";");
+    
+    // Build Outlook web deep link URL
+    const outlookUrl = `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(toEmail)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    
+    // Open Outlook web deep link (opens as draft, does not auto-send)
+    window.open(outlookUrl, '_blank');
+
+    toast.info("Opening email draft in Outlook...", {
+      position: "top-right",
+      autoClose: 2000,
+    });
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case "Completed":
@@ -1382,6 +1541,13 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
               className="btn-secondary"
             >
               Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSendMail}
+              className="btn-primary"
+            >
+              Send Mail
             </button>
             <button
               type="submit"
