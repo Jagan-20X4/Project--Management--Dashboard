@@ -125,12 +125,13 @@ Update project stages and dates
 
 When a new project is created, the following stages are automatically assigned:
 
-1. **Kick Off** (Weight: 10%)
-2. **Requirement Gathering** (Weight: 20%)
-3. **Development** (Weight: 30%)
-4. **Internal Testing** (Weight: 10%)
-5. **UAT** (Weight: 20%)
-6. **Deployment** (Weight: 10%)
+1. **Concept** (Weight: 10%)
+2. **Business case approval** (Weight: 5%)
+3. **IT Infra and security** (Weight: 15%)
+4. **Vendor onboarding** (Weight: 5%)
+5. **Execution & Delivery** (Weight: 55%)
+6. **UAT** (Weight: 5%)
+7. **Go-Live and support** (Weight: 5%)
 
 ## 🎨 Status Colors
 
