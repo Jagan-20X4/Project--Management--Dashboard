@@ -9,12 +9,14 @@ const router = express.Router();
 
 // Default stages template
 const defaultStages = [
-  { name: "Kick Off", stageOwner: "", weight: 10, status: "Yet to Start", startDate: "", endDate: "", actualStartDate: "", actualEndDate: "", remarks: "" },
-  { name: "Requirement Gathering", stageOwner: "", weight: 20, status: "Yet to Start", startDate: "", endDate: "", actualStartDate: "", actualEndDate: "", remarks: "" },
-  { name: "Development", stageOwner: "", weight: 30, status: "Yet to Start", startDate: "", endDate: "", actualStartDate: "", actualEndDate: "", remarks: "" },
-  { name: "Internal Testing", stageOwner: "", weight: 10, status: "Yet to Start", startDate: "", endDate: "", actualStartDate: "", actualEndDate: "", remarks: "" },
-  { name: "UAT", stageOwner: "", weight: 20, status: "Yet to Start", startDate: "", endDate: "", actualStartDate: "", actualEndDate: "", remarks: "" },
-  { name: "Deployment", stageOwner: "", weight: 10, status: "Yet to Start", startDate: "", endDate: "", actualStartDate: "", actualEndDate: "", remarks: "" }
+  { name: "Concept", stageOwner: "", weight: 5, status: "Yet to Start", startDate: "", endDate: "", actualStartDate: "", actualEndDate: "", remarks: "" },
+  { name: "Business case approval", stageOwner: "", weight: 5, status: "Yet to Start", startDate: "", endDate: "", actualStartDate: "", actualEndDate: "", remarks: "" },
+  { name: "IT Infra and security", stageOwner: "", weight: 5, status: "Yet to Start", startDate: "", endDate: "", actualStartDate: "", actualEndDate: "", remarks: "" },
+  { name: "Vendor onboarding", stageOwner: "", weight: 55, status: "Yet to Start", startDate: "", endDate: "", actualStartDate: "", actualEndDate: "", remarks: "" },
+  { name: "Development", stageOwner: "", weight: 15, status: "Yet to Start", startDate: "", endDate: "", actualStartDate: "", actualEndDate: "", remarks: "" },
+  { name: "Execution & Delivery", stageOwner: "", weight: 5, status: "Yet to Start", startDate: "", endDate: "", actualStartDate: "", actualEndDate: "", remarks: "" },
+  { name: "UAT", stageOwner: "", weight: 5, status: "Yet to Start", startDate: "", endDate: "", actualStartDate: "", actualEndDate: "", remarks: "" },
+  { name: "Go-Live and support", stageOwner: "", weight: 5, status: "Yet to Start", startDate: "", endDate: "", actualStartDate: "", actualEndDate: "", remarks: "" }
 ];
 
 // Generate next project ID
@@ -270,17 +272,51 @@ router.get("/:id", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     const projectId = await generateProjectId();
+    
+    // Clean up the request body - ensure projectStatus is valid
+    const validStatuses = ["Work in Progress", "Completed", "On Hold", "Delay"];
+    let projectStatus = req.body.projectStatus;
+    
+    // If projectStatus is empty or invalid, use default
+    if (!projectStatus || !validStatuses.includes(projectStatus)) {
+      projectStatus = "Work in Progress";
+    }
+    
+    // Prepare project data
     const projectData = {
       ...req.body,
       projectId,
+      projectStatus,
       stages: defaultStages.map(stage => ({ ...stage }))
     };
+    
+    // Remove empty string values for optional fields to use defaults
+    const optionalFields = [
+      'businessCaseLink',
+      'objectives',
+      'projectOwnerPrimaryEmail',
+      'projectOwnerPrimaryContact',
+      'projectOwnerAlternateEmail',
+      'businessOwnerPrimaryEmail',
+      'businessOwnerPrimaryContact',
+      'businessOwnerAlternateEmail',
+      'overallProjectSummary'
+    ];
+    
+    optionalFields.forEach(field => {
+      if (projectData[field] === '') {
+        delete projectData[field]; // Let Mongoose use default values
+      }
+    });
     
     const project = new Project(projectData);
     await project.save();
     res.status(201).json(project);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error("Error creating project:", error);
+    // Provide more detailed error message
+    const errorMessage = error.message || "Failed to create project";
+    res.status(400).json({ error: errorMessage });
   }
 });
 
@@ -310,6 +346,11 @@ router.patch("/:id/stages", async (req, res) => {
     // Update overall project summary if provided
     if (req.body.overallProjectSummary !== undefined) {
       project.overallProjectSummary = req.body.overallProjectSummary;
+    }
+    
+    // Update priority if provided
+    if (req.body.priority !== undefined) {
+      project.priority = req.body.priority;
     }
     
     await project.save();

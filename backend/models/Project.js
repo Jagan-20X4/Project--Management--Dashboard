@@ -36,14 +36,30 @@ const businessCaseFileSchema = new mongoose.Schema({
 const projectSchema = new mongoose.Schema({
   projectId: { type: String, required: true, unique: true },
   projectName: { type: String, required: true },
+  businessCaseLink: { type: String, default: "" },
   objectives: { type: String, default: "" },
   department: { type: String, required: true },
   techDepartment: { type: String, required: true },
+  projectStatus: { 
+    type: String, 
+    enum: ["Work in Progress", "Completed", "On Hold", "Delay"],
+    default: "Work in Progress"
+  },
   projectOwner: { type: String, required: true },
-  itOwner: { type: String, required: true },
+  projectOwnerPrimaryEmail: { type: String, default: "" },
+  projectOwnerPrimaryContact: { type: String, default: "" },
+  projectOwnerAlternateEmail: { type: String, default: "" },
   businessOwner: { type: String, required: true },
+  businessOwnerPrimaryEmail: { type: String, default: "" },
+  businessOwnerPrimaryContact: { type: String, default: "" },
+  businessOwnerAlternateEmail: { type: String, default: "" },
   startDate: { type: String, default: "" },
   endDate: { type: String, default: "" },
+  priority: { 
+    type: String, 
+    enum: ["P1", "P2", "P3"],
+    default: "P3"
+  },
   overallProjectSummary: { type: String, default: "" },
   businessCase: {
     fileName: { type: String, default: "" },
