@@ -1,0 +1,154 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply transition-colors duration-200;
+  }
+  
+  body {
+    margin: 0;
+    font-family: 'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    font-weight: 500;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    
+    /* Background image - original appearance without overlay */
+    background-image: var(--background-image);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh;
+    color: #111827;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+  }
+
+  code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+  }
+}
+
+@layer components {
+  /* Design System Colors */
+  :root {
+    --primary: #2563eb;
+    --accent: #10b981;
+    --background: #f9fafb;
+    --text-primary: #111827;
+  }
+
+  /* Modern Input Styles */
+  .input-modern {
+    @apply w-full px-4 py-3 text-sm border border-gray-200 rounded-2xl 
+           bg-white text-[#111827] placeholder-gray-400 font-medium
+           focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent
+           transition-all duration-200;
+  }
+
+  /* Modern Button Styles */
+  .btn-primary {
+    @apply px-6 py-3 text-sm font-medium text-white rounded-2xl
+           focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:ring-offset-2
+           shadow-md hover:shadow-lg transition-all duration-200
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-md;
+    background-color: #2563eb;
+    font-weight: 500;
+  }
+  .btn-primary:hover {
+    background-color: #1d4ed8;
+  }
+  .btn-primary:active {
+    background-color: #1e40af;
+  }
+
+  .btn-secondary {
+    @apply px-6 py-3 text-sm font-medium text-gray-700 rounded-2xl
+           bg-white border border-gray-300 hover:bg-gray-50 active:bg-gray-100
+           focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2
+           transition-all duration-200 shadow-md;
+    font-weight: 500;
+  }
+
+  .btn-success {
+    @apply px-4 py-2 text-sm font-medium text-white rounded-2xl
+           focus:outline-none focus:ring-2 focus:ring-[#10b981] focus:ring-offset-2
+           shadow-md hover:shadow-lg transition-all duration-200
+           flex items-center gap-2;
+    background-color: #10b981;
+    font-weight: 500;
+  }
+  .btn-success:hover {
+    background-color: #059669;
+  }
+  .btn-success:active {
+    background-color: #047857;
+  }
+
+  /* Modern Card Styles */
+  .card-modern {
+    @apply bg-white rounded-2xl shadow-md border border-gray-100
+           transition-shadow duration-200 hover:shadow-lg;
+  }
+
+  /* Typography Utilities */
+  .text-heading {
+    @apply font-semibold text-[#111827];
+    font-weight: 600;
+  }
+
+  .text-body {
+    @apply font-medium text-[#111827];
+    font-weight: 500;
+  }
+
+  /* Fade-in animation */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  /* Glow shift animation for background */
+  @keyframes glowShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* Toast Notification Styles */
+  .Toastify__toast {
+    @apply rounded-2xl shadow-md font-medium;
+    font-family: 'Poppins', 'Inter', sans-serif;
+  }
+
+  .Toastify__toast--success {
+    @apply bg-white border border-green-200;
+  }
+
+  .Toastify__toast--error {
+    @apply bg-white border border-red-200;
+  }
+
+  .Toastify__toast--info {
+    @apply bg-white border border-blue-200;
+  }
+
+  .Toastify__progress-bar {
+    background: #2563eb;
+  }
+}

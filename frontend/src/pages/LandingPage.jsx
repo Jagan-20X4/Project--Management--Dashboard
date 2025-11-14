@@ -1,0 +1,184 @@
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { getAllProjects, deleteProject } from "../api/projectAPI";
+import ProjectTable from "../components/ProjectTable";
+import EditStatusModal from "../components/EditStatusModal";
+import { toast } from "react-toastify";
+
+const LandingPage = () => {
+  const [projects, setProjects] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    try {
+      setLoading(true);
+      const data = await getAllProjects();
+      setProjects(data);
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      toast.error("Failed to load projects");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditStatus = (project) => {
+    setSelectedProject(project);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedProject(null);
+  };
+
+  const handleUpdate = () => {
+    fetchProjects();
+    toast.success("Project status updated successfully!");
+  };
+
+  const handleDelete = async (project) => {
+    if (!project || !project._id) {
+      toast.error("Invalid project data");
+      return;
+    }
+
+    if (window.confirm(`Are you sure you want to delete project "${project.projectName}" (${project.projectId})? This action cannot be undone.`)) {
+      try {
+        // Optimistically remove from UI immediately
+        const projectIdToDelete = project._id;
+        setProjects(prevProjects => prevProjects.filter(p => p._id !== projectIdToDelete));
+        
+        // Delete from database
+        await deleteProject(project._id);
+        
+        // Show success message
+        toast.success(`Project "${project.projectName}" deleted successfully!`);
+        
+        // Refresh the list to ensure consistency with database
+        await fetchProjects();
+      } catch (error) {
+        console.error("Error deleting project:", error);
+        
+        // If deletion failed, restore the project in the UI by refreshing
+        fetchProjects();
+        
+        const errorMessage = error.message || "Failed to delete project";
+        toast.error(errorMessage);
+      }
+    }
+  };
+
+  // Calculate dashboard stats
+  const totalProjects = projects.length;
+  const completedProjects = projects.filter((p) => {
+    const statuses = p.stages?.map((s) => s.status) || [];
+    return statuses.every((s) => s === "Completed");
+  }).length;
+  const inProgressProjects = projects.filter((p) => {
+    const statuses = p.stages?.map((s) => s.status) || [];
+    return statuses.includes("In Progress") && !statuses.every((s) => s === "Completed");
+  }).length;
+
+  return (
+    <div className="min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+        {/* Header Section */}
+        <div className="mb-10 animate-fade-in">
+          <h1 className="text-4xl font-semibold mb-3 tracking-tight" style={{ color: '#FFFFFF' }}>Project Management Dashboard</h1>
+          <p className="text-lg font-medium" style={{ color: '#FFFFFF' }}>Manage and track all your projects in one place</p>
+        </div>
+
+        {/* Dashboard Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="card-modern p-6 border-l-4 border-[#2563eb] animate-fade-in">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">Total Projects</p>
+                <p className="text-3xl font-semibold text-[#111827]">{totalProjects}</p>
+              </div>
+              <div className="text-[#2563eb] text-4xl opacity-80">📊</div>
+            </div>
+          </div>
+          <div className="card-modern p-6 border-l-4 border-[#10b981] animate-fade-in" style={{ animationDelay: '0.1s' }}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">Completed</p>
+                <p className="text-3xl font-semibold text-[#111827]">{completedProjects}</p>
+              </div>
+              <div className="text-[#10b981] text-4xl opacity-80">✅</div>
+            </div>
+          </div>
+          <div className="card-modern p-6 border-l-4 border-yellow-500 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">In Progress</p>
+                <p className="text-3xl font-semibold text-[#111827]">{inProgressProjects}</p>
+              </div>
+              <div className="text-yellow-500 text-4xl opacity-80">🔄</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Search and Add Project Section */}
+        <div className="card-modern p-6 mb-6 animate-fade-in">
+          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div className="flex-1 w-full md:w-auto">
+              <input
+                type="text"
+                placeholder="Search by Project ID or Project Name..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="input-modern"
+              />
+            </div>
+            <button
+              onClick={() => navigate("/add-project")}
+              className="btn-primary w-full md:w-auto"
+            >
+              <span className="mr-2">➕</span> Add New Project
+            </button>
+          </div>
+        </div>
+
+        {/* Projects Table */}
+        {loading ? (
+          <div className="card-modern p-12 text-center animate-fade-in">
+            <div className="flex flex-col items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2563eb] mb-4"></div>
+              <p className="text-gray-500">Loading projects...</p>
+            </div>
+          </div>
+        ) : (
+          <div className="animate-fade-in">
+            <ProjectTable
+              projects={projects}
+              searchTerm={searchTerm}
+              onEditStatus={handleEditStatus}
+              onDelete={handleDelete}
+            />
+          </div>
+        )}
+
+        {/* Edit Status Modal */}
+        <EditStatusModal
+          project={selectedProject}
+          isOpen={isModalOpen}
+          onClose={handleModalClose}
+          onUpdate={handleUpdate}
+        />
+      </div>
+    </div>
+  );
+};
+
+export default LandingPage;
+
