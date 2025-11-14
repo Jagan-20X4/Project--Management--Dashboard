@@ -51,6 +51,32 @@
            transition-all duration-200;
   }
 
+  /* Modern Select/Dropdown Styles */
+  select.input-modern {
+    @apply appearance-none cursor-pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+    background-position: right 0.75rem center;
+    background-repeat: no-repeat;
+    background-size: 1.25em 1.25em;
+    padding-right: 2.75rem;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  select.input-modern:hover {
+    @apply border-gray-300;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  }
+
+  select.input-modern:focus {
+    @apply border-[#2563eb];
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%232563eb' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+
+  select.input-modern option {
+    @apply py-2 px-3 bg-white text-[#111827];
+  }
+
   /* Modern Button Styles */
   .btn-primary {
     @apply px-6 py-3 text-sm font-medium text-white rounded-2xl

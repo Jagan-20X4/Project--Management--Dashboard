@@ -17,12 +17,13 @@ export const createProject = async (projectData) => {
   return response.data;
 };
 
-export const updateProjectStages = async (id, stages, startDate, endDate, logs = [], overallProjectSummary = undefined) => {
+export const updateProjectStages = async (id, stages, startDate, endDate, logs = [], overallProjectSummary = undefined, priority = undefined) => {
   const response = await axios.patch(`${API_URL}/${id}/stages`, {
     stages,
     startDate,
     endDate,
     overallProjectSummary,
+    priority,
     logs
   });
   return response.data;

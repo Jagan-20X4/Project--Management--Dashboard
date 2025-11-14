@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
 import { ChevronDown, X, Plus } from "lucide-react";
@@ -9,6 +9,7 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
   const [stages, setStages] = useState([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [priority, setPriority] = useState("P3");
   const [overallProjectSummary, setOverallProjectSummary] = useState("");
   const [loading, setLoading] = useState(false);
   const [logs, setLogs] = useState([]);
@@ -16,25 +17,93 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
   const [initialStages, setInitialStages] = useState([]);
   const [initialStartDate, setInitialStartDate] = useState("");
   const [initialEndDate, setInitialEndDate] = useState("");
+  const [initialPriority, setInitialPriority] = useState("P3");
   const [initialOverallProjectSummary, setInitialOverallProjectSummary] = useState("");
   const [highlightedFields, setHighlightedFields] = useState(new Set());
   const [recalculatedDateFields, setRecalculatedDateFields] = useState(new Set());
   const [expandedStages, setExpandedStages] = useState(new Set());
-  const [milestoneNotes, setMilestoneNotes] = useState({});
-  const [initialMilestoneNotes, setInitialMilestoneNotes] = useState({});
   const [businessCases, setBusinessCases] = useState([]);
   const logsSectionRef = useRef(null);
   const [milestoneCounters, setMilestoneCounters] = useState({});
+
+  // Helper function to format date from yyyy-mm-dd to dd-mm-yyyy
+  const formatDateForDisplay = (value) => {
+    if (!value || value === "(empty)") return value;
+    
+    // Check if value matches yyyy-mm-dd format
+    const datePattern = /^(\d{4})-(\d{2})-(\d{2})$/;
+    const match = value.match(datePattern);
+    
+    if (match) {
+      const [, year, month, day] = match;
+      return `${day}-${month}-${year}`;
+    }
+    
+    return value;
+  };
+
+  const fetchBusinessCase = useCallback(async () => {
+    if (!project?._id) return;
+    try {
+      const bc = await getBusinessCase(project._id);
+      const normalized = Array.isArray(bc)
+        ? bc
+        : Array.isArray(bc?.businessCases)
+          ? bc.businessCases
+          : bc
+            ? [bc]
+            : [];
+      setBusinessCases(normalized);
+    } catch (err) {
+      setBusinessCases([]);
+    }
+  }, [project]);
+
+  const fetchLogs = useCallback(async () => {
+    if (!project?._id) return;
+    
+    try {
+      const projectLogs = await getProjectLogs(project._id);
+      console.log("Fetched logs from backend:", projectLogs);
+      // Ensure logs are properly formatted
+      const formattedLogs = projectLogs.map(log => ({
+        id: log.id || log._id,
+        fieldName: log.fieldName || log.fieldChanged,
+        previousValue: formatDateForDisplay(log.previousValue || log.oldValue || "(empty)"),
+        newValue: formatDateForDisplay(log.newValue || "(empty)"),
+        timestamp: log.timestamp || new Date().toLocaleString('en-US', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: true
+        }),
+        projectName: log.projectName || project?.projectName || "Unknown",
+        stageName: log.stageName || "N/A",
+        user: log.user || log.changedBy || "System"
+      }));
+      setLogs(formattedLogs);
+      console.log("Formatted logs set:", formattedLogs);
+    } catch (error) {
+      console.error("Error fetching logs:", error);
+      // If fetching fails, start with empty logs
+      setLogs([]);
+    }
+  }, [project]);
 
   useEffect(() => {
     if (project) {
       const projectStages = project.stages || [];
       const projectStartDate = project.startDate || "";
       const projectEndDate = project.endDate || "";
+      const projectPriority = project.priority || "P3";
       const projectSummary = project.overallProjectSummary || "";
       
       setStartDate(projectStartDate);
       setEndDate(projectEndDate);
+      setPriority(projectPriority);
       setOverallProjectSummary(projectSummary);
       
       // Initialize milestones for Development stage
@@ -82,6 +151,7 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
       setInitialStages(JSON.parse(JSON.stringify(projectStages)));
       setInitialStartDate(projectStartDate);
       setInitialEndDate(projectEndDate);
+      setInitialPriority(projectPriority);
       setInitialOverallProjectSummary(projectSummary);
       
       // Clear pending changes when opening a new project
@@ -92,7 +162,7 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
       // Fetch business case metadata
       fetchBusinessCase();
     }
-  }, [project]);
+  }, [project, fetchLogs, fetchBusinessCase]);
 
   // Debug: Log when logs state changes
   useEffect(() => {
@@ -102,99 +172,12 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
     }
   }, [logs]);
 
-  // Helper function to format date from yyyy-mm-dd to dd-mm-yyyy
-  const formatDateForDisplay = (value) => {
-    if (!value || value === "(empty)") return value;
-    
-    // Check if value matches yyyy-mm-dd format
-    const datePattern = /^(\d{4})-(\d{2})-(\d{2})$/;
-    const match = value.match(datePattern);
-    
-    if (match) {
-      const [, year, month, day] = match;
-      return `${day}-${month}-${year}`;
-    }
-    
-    return value;
-  };
-
-  const formatDateObject = (date) => {
-    if (!(date instanceof Date) || isNaN(date.getTime())) return "";
-    const day = `${date.getDate()}`.padStart(2, "0");
-    const month = `${date.getMonth() + 1}`.padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
-  };
-
-  const parseDateSafe = (value) => {
-    if (!value) return null;
-    const parts = value.split("-");
-    if (parts.length !== 3) return null;
-    const [year, month, day] = parts.map(Number);
-    if (!year || !month || !day) return null;
-    const date = new Date(year, month - 1, day);
-    if (isNaN(date.getTime())) return null;
-    return date;
-  };
-
-
-  const fetchBusinessCase = async () => {
-    if (!project?._id) return;
-    try {
-      const bc = await getBusinessCase(project._id);
-      const normalized = Array.isArray(bc)
-        ? bc
-        : Array.isArray(bc?.businessCases)
-          ? bc.businessCases
-          : bc
-            ? [bc]
-            : [];
-      setBusinessCases(normalized);
-    } catch (err) {
-      setBusinessCases([]);
-    }
-  };
-
   const formatBytes = (bytes) => {
     if (!bytes && bytes !== 0) return "";
     const sizes = ["Bytes", "KB", "MB", "GB"];
     if (bytes === 0) return "0 Bytes";
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
     return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${sizes[i]}`;
-  };
-
-  const fetchLogs = async () => {
-    if (!project?._id) return;
-    
-    try {
-      const projectLogs = await getProjectLogs(project._id);
-      console.log("Fetched logs from backend:", projectLogs);
-      // Ensure logs are properly formatted
-      const formattedLogs = projectLogs.map(log => ({
-        id: log.id || log._id,
-        fieldName: log.fieldName || log.fieldChanged,
-        previousValue: formatDateForDisplay(log.previousValue || log.oldValue || "(empty)"),
-        newValue: formatDateForDisplay(log.newValue || "(empty)"),
-        timestamp: log.timestamp || new Date().toLocaleString('en-US', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-          hour12: true
-        }),
-        projectName: log.projectName || project?.projectName || "Unknown",
-        stageName: log.stageName || "N/A",
-        user: log.user || log.changedBy || "System"
-      }));
-      setLogs(formattedLogs);
-      console.log("Formatted logs set:", formattedLogs);
-    } catch (error) {
-      console.error("Error fetching logs:", error);
-      // If fetching fails, start with empty logs
-      setLogs([]);
-    }
   };
 
   const addPendingChange = (fieldName, previousValue, newValue, stageName = "N/A") => {
@@ -685,7 +668,7 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
       
       if (allChanges.length === 0) {
         // No changes detected, just save the project silently
-        await updateProjectStages(project._id, stages, startDate, endDate, [], overallProjectSummary);
+        await updateProjectStages(project._id, stages, startDate, endDate, [], overallProjectSummary, priority);
         onUpdate();
         setLoading(false);
         return;
@@ -728,7 +711,7 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
       setHighlightedFields(changedFieldKeys);
       
       // Save changes to backend along with logs (logs are saved permanently to database)
-      await updateProjectStages(project._id, stages, startDate, endDate, logsToSave, overallProjectSummary);
+      await updateProjectStages(project._id, stages, startDate, endDate, logsToSave, overallProjectSummary, priority);
       console.log("Project and logs saved successfully");
       
       // Wait a bit to ensure database write is complete
@@ -742,8 +725,8 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
       setInitialStages(JSON.parse(JSON.stringify(stages)));
       setInitialStartDate(startDate);
       setInitialEndDate(endDate);
+      setInitialPriority(priority);
       setInitialOverallProjectSummary(overallProjectSummary);
-      setInitialMilestoneNotes(JSON.parse(JSON.stringify(milestoneNotes)));
       
       // Update milestone counters based on current milestones
       stages.forEach((stage, stageIndex) => {
@@ -839,6 +822,20 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                     transition={{ duration: 2 }}
                     className={`input-modern ${highlightedFields.has("project-startDate") ? 'bg-yellow-100' : ''}`}
                   />
+                  <div className="mt-3">
+                    <label className="block text-sm font-semibold text-[#111827] mb-2">Priority</label>
+                    <select
+                      value={priority}
+                      onChange={(e) => {
+                        setPriority(e.target.value);
+                      }}
+                      className="input-modern"
+                    >
+                      <option value="P1">P1</option>
+                      <option value="P2">P2</option>
+                      <option value="P3">P3</option>
+                    </select>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-[#111827] mb-2">Planned End Date</label>
@@ -880,23 +877,54 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                     {project.objectives || <span className="text-gray-400 italic">No objectives specified</span>}
                   </span>
                 </div>
+                {project.businessCaseLink && (
+                  <div className="flex items-center">
+                    <span className="text-base font-semibold text-[#111827] min-w-[160px]">Business Case Link:</span>
+                    <span className="text-base text-gray-700 flex-1">
+                      <a 
+                        href={project.businessCaseLink} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-[#2563eb] hover:underline break-all"
+                      >
+                        {project.businessCaseLink}
+                      </a>
+                    </span>
+                  </div>
+                )}
                 <div className="flex items-center">
-                  <span className="text-base font-semibold text-[#111827] min-w-[160px]">Project Owner:</span>
+                  <span className="text-base font-semibold text-[#111827] min-w-[160px]">Project Status:</span>
                   <span className="text-base text-gray-700">
-                    {project.projectOwner || <span className="text-gray-400 italic">Not specified</span>}
+                    {project.projectStatus || <span className="text-gray-400 italic">Not specified</span>}
                   </span>
                 </div>
-                <div className="flex items-center">
-                  <span className="text-base font-semibold text-[#111827] min-w-[160px]">IT Owner:</span>
-                  <span className="text-base text-gray-700">
-                    {project.itOwner || <span className="text-gray-400 italic">Not specified</span>}
-                  </span>
+                <div className="flex items-start">
+                  <div className="text-base font-semibold text-[#111827] min-w-[180px] space-y-2">
+                    <div>Project Owner:</div>
+                    <div className="text-sm font-normal text-gray-600">Primary Email:</div>
+                    <div className="text-sm font-normal text-gray-600">Primary Contact:</div>
+                    <div className="text-sm font-normal text-gray-600">Alternate Email:</div>
+                  </div>
+                  <div className="text-base text-gray-700 flex-1 space-y-2">
+                    <div className="font-medium">{project.projectOwner || <span className="text-gray-400 italic">Not specified</span>}</div>
+                    <div className="text-sm">{project.projectOwnerPrimaryEmail || <span className="text-gray-400 italic">Not specified</span>}</div>
+                    <div className="text-sm">{project.projectOwnerPrimaryContact || <span className="text-gray-400 italic">Not specified</span>}</div>
+                    <div className="text-sm">{project.projectOwnerAlternateEmail || <span className="text-gray-400 italic">Not specified</span>}</div>
+                  </div>
                 </div>
-                <div className="flex items-center">
-                  <span className="text-base font-semibold text-[#111827] min-w-[160px]">Business Owner:</span>
-                  <span className="text-base text-gray-700">
-                    {project.businessOwner || <span className="text-gray-400 italic">Not specified</span>}
-                  </span>
+                <div className="flex items-start">
+                  <div className="text-base font-semibold text-[#111827] min-w-[180px] space-y-2">
+                    <div>Business Owner:</div>
+                    <div className="text-sm font-normal text-gray-600">Primary Email:</div>
+                    <div className="text-sm font-normal text-gray-600">Primary Contact:</div>
+                    <div className="text-sm font-normal text-gray-600">Alternate Email:</div>
+                  </div>
+                  <div className="text-base text-gray-700 flex-1 space-y-2">
+                    <div className="font-medium">{project.businessOwner || <span className="text-gray-400 italic">Not specified</span>}</div>
+                    <div className="text-sm">{project.businessOwnerPrimaryEmail || <span className="text-gray-400 italic">Not specified</span>}</div>
+                    <div className="text-sm">{project.businessOwnerPrimaryContact || <span className="text-gray-400 italic">Not specified</span>}</div>
+                    <div className="text-sm">{project.businessOwnerAlternateEmail || <span className="text-gray-400 italic">Not specified</span>}</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1022,7 +1050,7 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                                   <select
                                     value={stage.status}
                                     onChange={(e) => handleStageChange(index, "status", e.target.value)}
-                                    className={`w-full px-3 py-2 text-sm border rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#2563eb] transition-all duration-200 font-medium whitespace-nowrap ${getStatusColor(stage.status)} ${isStatusHighlighted ? 'bg-yellow-100' : ''}`}
+                                    className={`input-modern text-sm font-medium whitespace-nowrap ${getStatusColor(stage.status)} ${isStatusHighlighted ? 'bg-yellow-100' : ''}`}
                                     style={{ minWidth: '130px' }}
                                   >
                                     <option value="Yet to Start">Yet to Start</option>

@@ -9,14 +9,22 @@ const AddProjectPage = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [businessCaseFiles, setBusinessCaseFiles] = useState([]);
+  const [dateError, setDateError] = useState("");
   const [formData, setFormData] = useState({
     projectName: "",
+    businessCaseLink: "",
     objectives: "",
     department: "",
     techDepartment: "",
+    projectStatus: "",
     projectOwner: "",
-    itOwner: "",
+    projectOwnerPrimaryEmail: "",
+    projectOwnerPrimaryContact: "",
+    projectOwnerAlternateEmail: "",
     businessOwner: "",
+    businessOwnerPrimaryEmail: "",
+    businessOwnerPrimaryContact: "",
+    businessOwnerAlternateEmail: "",
     startDate: "",
     endDate: "",
   });
@@ -42,10 +50,28 @@ const AddProjectPage = () => {
   ];
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
+    
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
+
+    // Validate dates when either date field changes
+    if (name === "startDate" || name === "endDate") {
+      const startDate = name === "startDate" ? value : formData.startDate;
+      const endDate = name === "endDate" ? value : formData.endDate;
+      
+      if (startDate && endDate) {
+        if (new Date(endDate) < new Date(startDate)) {
+          setDateError("End date cannot be earlier than start date");
+        } else {
+          setDateError("");
+        }
+      } else {
+        setDateError("");
+      }
+    }
   };
 
   const handleFileSelect = (e) => {
@@ -74,8 +100,21 @@ const AddProjectPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate dates before submission
+    if (formData.startDate && formData.endDate) {
+      if (new Date(formData.endDate) < new Date(formData.startDate)) {
+        setDateError("End date cannot be earlier than start date");
+        toast.error("Please correct the date range. End date must be on or after start date.");
+        return;
+      }
+    }
+    
     setLoading(true);
+    setDateError("");
     try {
+      // Log form data for debugging
+      console.log("Submitting project data:", formData);
       const created = await createProject(formData);
       toast.success("Project created successfully!");
 
@@ -103,7 +142,8 @@ const AddProjectPage = () => {
       navigate("/");
     } catch (error) {
       console.error("Error creating project:", error);
-      toast.error("Failed to create project. Please try again.");
+      const errorMessage = error?.response?.data?.error || error?.message || "Failed to create project. Please try again.";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -208,6 +248,20 @@ const AddProjectPage = () => {
 
             <div>
               <label className="block text-sm font-semibold text-[#111827] mb-2">
+                Business Case Link
+              </label>
+              <input
+                type="text"
+                name="businessCaseLink"
+                value={formData.businessCaseLink}
+                onChange={handleChange}
+                className="input-modern"
+                placeholder="Enter business case link"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-[#111827] mb-2">
                 Objectives
               </label>
               <textarea
@@ -243,73 +297,185 @@ const AddProjectPage = () => {
 
               <div>
                 <label className="block text-sm font-semibold text-[#111827] mb-2">
-                  Project Owner <span className="text-red-500">*</span>
+                  Project Status <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="text"
-                  name="projectOwner"
-                  value={formData.projectOwner}
+                <select
+                  name="projectStatus"
+                  value={formData.projectStatus}
                   onChange={handleChange}
                   required
                   className="input-modern"
-                  placeholder="Enter project owner name"
-                />
+                >
+                  <option value="">Select Project Status</option>
+                  <option value="Work in Progress">Work in Progress</option>
+                  <option value="Completed">Completed</option>
+                  <option value="On Hold">On Hold</option>
+                  <option value="Delay">Delay</option>
+                </select>
               </div>
+            </div>
 
+            {/* Project Owner Section */}
+            <div className="space-y-4">
+              {/*<h3 className="text-lg font-semibold text-[#111827]">Project Owner</h3>*/}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-semibold text-[#111827] mb-2">
+                    Project Owner <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="projectOwner"
+                    value={formData.projectOwner}
+                    onChange={handleChange}
+                    required
+                    className="input-modern"
+                    placeholder="Enter project owner name"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-[#111827] mb-2">
+                    Email <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    name="projectOwnerPrimaryEmail"
+                    value={formData.projectOwnerPrimaryEmail}
+                    onChange={handleChange}
+                    required
+                    className="input-modern"
+                    placeholder="Enter email"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-[#111827] mb-2">
+                    Primary Contact of Project Owner <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="projectOwnerPrimaryContact"
+                    value={formData.projectOwnerPrimaryContact}
+                    onChange={handleChange}
+                    required
+                    className="input-modern"
+                    placeholder="Enter primary contact number"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-[#111827] mb-2">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="projectOwnerAlternateEmail"
+                    value={formData.projectOwnerAlternateEmail}
+                    onChange={handleChange}
+                    className="input-modern"
+                    placeholder="Enter email"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Business Owner Section */}
+            <div className="space-y-4">
+              {/*<h3 className="text-lg font-semibold text-[#111827]">Business Owner</h3>*/}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-semibold text-[#111827] mb-2">
+                    Business Owner <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="businessOwner"
+                    value={formData.businessOwner}
+                    onChange={handleChange}
+                    required
+                    className="input-modern"
+                    placeholder="Enter business owner name"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-[#111827] mb-2">
+                    Email <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    name="businessOwnerPrimaryEmail"
+                    value={formData.businessOwnerPrimaryEmail}
+                    onChange={handleChange}
+                    required
+                    className="input-modern"
+                    placeholder="Enter email"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-[#111827] mb-2">
+                    Primary Contact of Business Owner <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="businessOwnerPrimaryContact"
+                    value={formData.businessOwnerPrimaryContact}
+                    onChange={handleChange}
+                    required
+                    className="input-modern"
+                    placeholder="Enter primary contact number"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-[#111827] mb-2">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    name="businessOwnerAlternateEmail"
+                    value={formData.businessOwnerAlternateEmail}
+                    onChange={handleChange}
+                    className="input-modern"
+                    placeholder="Enter email"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-semibold text-[#111827] mb-2">
-                  IT Owner <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="itOwner"
-                  value={formData.itOwner}
-                  onChange={handleChange}
-                  required
-                  className="input-modern"
-                  placeholder="Enter IT owner name"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-[#111827] mb-2">
-                  Business Owner <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="businessOwner"
-                  value={formData.businessOwner}
-                  onChange={handleChange}
-                  required
-                  className="input-modern"
-                  placeholder="Enter business owner name"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-[#111827] mb-2">
-                  Project Start Date
+                  Project Start Date <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="date"
                   name="startDate"
                   value={formData.startDate}
                   onChange={handleChange}
+                  required
                   className="input-modern"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-[#111827] mb-2">
-                  Project End Date
+                  Project End Date <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="date"
                   name="endDate"
                   value={formData.endDate}
                   onChange={handleChange}
-                  className="input-modern"
+                  required
+                  min={formData.startDate || undefined}
+                  className={`input-modern ${dateError ? 'border-red-500' : ''}`}
                 />
+                {dateError && (
+                  <p className="text-red-500 text-sm mt-1">{dateError}</p>
+                )}
               </div>
             </div>
 
