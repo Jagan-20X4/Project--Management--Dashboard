@@ -1077,10 +1077,19 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                     <span className="text-sm sm:text-base font-semibold text-[#111827] sm:min-w-[140px] md:min-w-[160px]">Business Case Link:</span>
                     <span className="text-sm sm:text-base text-gray-700 flex-1 break-all">
                       <a 
-                        href={project.businessCaseLink} 
+                        href={project.businessCaseLink.startsWith('http://') || project.businessCaseLink.startsWith('https://') 
+                          ? project.businessCaseLink 
+                          : `https://${project.businessCaseLink}`} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="text-[#2563eb] hover:underline break-all"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const url = project.businessCaseLink.startsWith('http://') || project.businessCaseLink.startsWith('https://') 
+                            ? project.businessCaseLink 
+                            : `https://${project.businessCaseLink}`;
+                          window.open(url, '_blank', 'noopener,noreferrer');
+                        }}
                       >
                         {project.businessCaseLink}
                       </a>
@@ -1570,29 +1579,29 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
           </div>
 
           {/* Sticky Footer with Save Changes Button */}
-          <div className="flex-shrink-0 bg-white border-t border-gray-200 px-3 sm:px-4 md:px-6 py-3 sm:py-4 flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 shadow-lg">
+          <div className="flex-shrink-0 bg-white border-t border-gray-200 px-3 sm:px-4 md:px-6 py-2 sm:py-3 flex flex-col sm:flex-row justify-end gap-2 sm:gap-2 shadow-lg">
             <button
               type="button"
               onClick={onClose}
-              className="btn-secondary text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-2.5 order-2 sm:order-1"
+              className="btn-secondary text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 order-2 sm:order-1"
             >
               Cancel
             </button>
             <button
               type="button"
               onClick={handleSendMail}
-              className="btn-primary"
+              className="btn-primary text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2"
             >
               Send Mail
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-2.5 order-1 sm:order-2"
+              className="btn-primary text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 order-1 sm:order-2"
             >
               {loading ? (
                 <>
-                  <span className="inline-block animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white mr-2"></span>
+                  <span className="inline-block animate-spin rounded-full h-2.5 w-2.5 sm:h-3 sm:w-3 border-b-2 border-white mr-1.5"></span>
                   Saving...
                 </>
               ) : (
