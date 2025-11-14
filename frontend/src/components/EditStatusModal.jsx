@@ -792,24 +792,24 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
   if (!isOpen || !project) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-3 animate-fade-in">
-      <div className="bg-white rounded-2xl shadow-2xl w-[98vw] max-w-[98vw] h-[94vh] max-h-[94vh] flex flex-col overflow-hidden">
-        <div className="flex-shrink-0 bg-white border-b border-gray-200 px-6 py-5 flex justify-between items-center">
-          <h2 className="text-2xl font-semibold text-[#111827]">Edit Project Status - {project.projectName}</h2>
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-3 animate-fade-in">
+      <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-[98vw] h-full max-h-[98vh] sm:h-[94vh] sm:max-h-[94vh] flex flex-col overflow-hidden">
+        <div className="flex-shrink-0 bg-white border-b border-gray-200 px-3 sm:px-6 py-3 sm:py-5 flex justify-between items-center gap-2">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-[#111827] truncate flex-1">Edit Project Status - {project.projectName}</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-3xl font-semibold transition-colors duration-200 hover:bg-gray-100 rounded-full w-8 h-8 flex items-center justify-center"
+            className="text-gray-400 hover:text-gray-600 text-2xl sm:text-3xl font-semibold transition-colors duration-200 hover:bg-gray-100 rounded-full w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center flex-shrink-0"
           >
             ×
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
             <div className="flex-shrink-0">
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
                 <div>
-                  <label className="block text-sm font-semibold text-[#111827] mb-2">Planned Start Date</label>
+                  <label className="block text-xs sm:text-sm font-semibold text-[#111827] mb-1.5 sm:mb-2">Planned Start Date</label>
                   <motion.input
                     type="date"
                     value={startDate}
@@ -820,16 +820,16 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                       backgroundColor: ["#fef3c7", "#ffffff"],
                     } : {}}
                     transition={{ duration: 2 }}
-                    className={`input-modern ${highlightedFields.has("project-startDate") ? 'bg-yellow-100' : ''}`}
+                    className={`input-modern text-sm sm:text-base ${highlightedFields.has("project-startDate") ? 'bg-yellow-100' : ''}`}
                   />
-                  <div className="mt-3">
-                    <label className="block text-sm font-semibold text-[#111827] mb-2">Priority</label>
+                  <div className="mt-2 sm:mt-3">
+                    <label className="block text-xs sm:text-sm font-semibold text-[#111827] mb-1.5 sm:mb-2">Priority</label>
                     <select
                       value={priority}
                       onChange={(e) => {
                         setPriority(e.target.value);
                       }}
-                      className="input-modern"
+                      className="input-modern text-sm sm:text-base"
                     >
                       <option value="P1">P1</option>
                       <option value="P2">P2</option>
@@ -838,7 +838,7 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-[#111827] mb-2">Planned End Date</label>
+                  <label className="block text-xs sm:text-sm font-semibold text-[#111827] mb-1.5 sm:mb-2">Planned End Date</label>
                   <motion.input
                     type="date"
                     value={endDate}
@@ -849,7 +849,7 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                       backgroundColor: ["#fef3c7", "#ffffff"],
                     } : {}}
                     transition={{ duration: 2 }}
-                    className={`input-modern ${highlightedFields.has("project-endDate") ? 'bg-yellow-100' : ''}`}
+                    className={`input-modern text-sm sm:text-base ${highlightedFields.has("project-endDate") ? 'bg-yellow-100' : ''}`}
                   />
                 </div>
               </div>
@@ -857,30 +857,31 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                 <button
                   type="button"
                   onClick={handleAutoCalculateDates}
-                  className="btn-success"
+                  className="btn-success text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2"
                   title="Auto-calculate stage dates based on project dates and stage weights"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
-                  Auto-Calculate Stage Dates
+                  <span className="hidden sm:inline ml-1 sm:ml-2">Auto-Calculate Stage Dates</span>
+                  <span className="sm:hidden ml-1">Auto-Calculate</span>
                 </button>
               </div>
             </div>
 
             {/* Project Details Section */}
-            <div className="card-modern p-5 flex-shrink-0">
-              <div className="space-y-4">
-                <div className="flex items-start">
-                  <span className="text-base font-semibold text-[#111827] min-w-[160px]">Objectives:</span>
-                  <span className="text-base text-gray-700 flex-1">
+            <div className="card-modern p-3 sm:p-4 md:p-5 flex-shrink-0">
+              <div className="space-y-3 sm:space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-0">
+                  <span className="text-sm sm:text-base font-semibold text-[#111827] sm:min-w-[140px] md:min-w-[160px]">Objectives:</span>
+                  <span className="text-sm sm:text-base text-gray-700 flex-1 break-words">
                     {project.objectives || <span className="text-gray-400 italic">No objectives specified</span>}
                   </span>
                 </div>
                 {project.businessCaseLink && (
-                  <div className="flex items-center">
-                    <span className="text-base font-semibold text-[#111827] min-w-[160px]">Business Case Link:</span>
-                    <span className="text-base text-gray-700 flex-1">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-0">
+                    <span className="text-sm sm:text-base font-semibold text-[#111827] sm:min-w-[140px] md:min-w-[160px]">Business Case Link:</span>
+                    <span className="text-sm sm:text-base text-gray-700 flex-1 break-all">
                       <a 
                         href={project.businessCaseLink} 
                         target="_blank" 
@@ -892,59 +893,59 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                     </span>
                   </div>
                 )}
-                <div className="flex items-center">
-                  <span className="text-base font-semibold text-[#111827] min-w-[160px]">Project Status:</span>
-                  <span className="text-base text-gray-700">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-0">
+                  <span className="text-sm sm:text-base font-semibold text-[#111827] sm:min-w-[140px] md:min-w-[160px]">Project Status:</span>
+                  <span className="text-sm sm:text-base text-gray-700">
                     {project.projectStatus || <span className="text-gray-400 italic">Not specified</span>}
                   </span>
                 </div>
-                <div className="flex items-start">
-                  <div className="text-base font-semibold text-[#111827] min-w-[180px] space-y-2">
+                <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-0">
+                  <div className="text-sm sm:text-base font-semibold text-[#111827] sm:min-w-[140px] md:min-w-[160px] lg:min-w-[180px] space-y-1.5 sm:space-y-2">
                     <div>Project Owner:</div>
-                    <div className="text-sm font-normal text-gray-600">Primary Email:</div>
-                    <div className="text-sm font-normal text-gray-600">Primary Contact:</div>
-                    <div className="text-sm font-normal text-gray-600">Alternate Email:</div>
+                    <div className="text-xs sm:text-sm font-normal text-gray-600">Primary Email:</div>
+                    <div className="text-xs sm:text-sm font-normal text-gray-600">Primary Contact:</div>
+                    <div className="text-xs sm:text-sm font-normal text-gray-600">Alternate Email:</div>
                   </div>
-                  <div className="text-base text-gray-700 flex-1 space-y-2">
+                  <div className="text-sm sm:text-base text-gray-700 flex-1 space-y-1.5 sm:space-y-2 break-words">
                     <div className="font-medium">{project.projectOwner || <span className="text-gray-400 italic">Not specified</span>}</div>
-                    <div className="text-sm">{project.projectOwnerPrimaryEmail || <span className="text-gray-400 italic">Not specified</span>}</div>
-                    <div className="text-sm">{project.projectOwnerPrimaryContact || <span className="text-gray-400 italic">Not specified</span>}</div>
-                    <div className="text-sm">{project.projectOwnerAlternateEmail || <span className="text-gray-400 italic">Not specified</span>}</div>
+                    <div className="text-xs sm:text-sm break-all">{project.projectOwnerPrimaryEmail || <span className="text-gray-400 italic">Not specified</span>}</div>
+                    <div className="text-xs sm:text-sm">{project.projectOwnerPrimaryContact || <span className="text-gray-400 italic">Not specified</span>}</div>
+                    <div className="text-xs sm:text-sm break-all">{project.projectOwnerAlternateEmail || <span className="text-gray-400 italic">Not specified</span>}</div>
                   </div>
                 </div>
-                <div className="flex items-start">
-                  <div className="text-base font-semibold text-[#111827] min-w-[180px] space-y-2">
+                <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-0">
+                  <div className="text-sm sm:text-base font-semibold text-[#111827] sm:min-w-[140px] md:min-w-[160px] lg:min-w-[180px] space-y-1.5 sm:space-y-2">
                     <div>Business Owner:</div>
-                    <div className="text-sm font-normal text-gray-600">Primary Email:</div>
-                    <div className="text-sm font-normal text-gray-600">Primary Contact:</div>
-                    <div className="text-sm font-normal text-gray-600">Alternate Email:</div>
+                    <div className="text-xs sm:text-sm font-normal text-gray-600">Primary Email:</div>
+                    <div className="text-xs sm:text-sm font-normal text-gray-600">Primary Contact:</div>
+                    <div className="text-xs sm:text-sm font-normal text-gray-600">Alternate Email:</div>
                   </div>
-                  <div className="text-base text-gray-700 flex-1 space-y-2">
+                  <div className="text-sm sm:text-base text-gray-700 flex-1 space-y-1.5 sm:space-y-2 break-words">
                     <div className="font-medium">{project.businessOwner || <span className="text-gray-400 italic">Not specified</span>}</div>
-                    <div className="text-sm">{project.businessOwnerPrimaryEmail || <span className="text-gray-400 italic">Not specified</span>}</div>
-                    <div className="text-sm">{project.businessOwnerPrimaryContact || <span className="text-gray-400 italic">Not specified</span>}</div>
-                    <div className="text-sm">{project.businessOwnerAlternateEmail || <span className="text-gray-400 italic">Not specified</span>}</div>
+                    <div className="text-xs sm:text-sm break-all">{project.businessOwnerPrimaryEmail || <span className="text-gray-400 italic">Not specified</span>}</div>
+                    <div className="text-xs sm:text-sm">{project.businessOwnerPrimaryContact || <span className="text-gray-400 italic">Not specified</span>}</div>
+                    <div className="text-xs sm:text-sm break-all">{project.businessOwnerAlternateEmail || <span className="text-gray-400 italic">Not specified</span>}</div>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="flex flex-col flex-shrink-0">
-              <h3 className="text-lg font-semibold text-[#111827] mb-4">Project Stages</h3>
+              <h3 className="text-base sm:text-lg font-semibold text-[#111827] mb-3 sm:mb-4">Project Stages</h3>
               <div className="card-modern overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse table-fixed">
+                <div className="overflow-x-auto -mx-1 sm:mx-0">
+                  <table className="w-full border-collapse min-w-[750px] sm:min-w-full">
                     <thead className="bg-gray-50/50 sticky top-0 z-10">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-r" style={{width: '14%'}}>Stage Name</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-r whitespace-nowrap" style={{width: '13%'}}>Stage Owner</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-r whitespace-nowrap" style={{width: '6%'}}>Weight</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-r whitespace-nowrap" style={{width: '12%'}}>Status</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-r whitespace-nowrap" style={{width: '11%'}}>Planned Start Date</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-r whitespace-nowrap" style={{width: '11%'}}>Planned End Date</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-r whitespace-nowrap" style={{width: '11%'}}>Actual Start Date</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b border-r whitespace-nowrap" style={{width: '11%'}}>Actual End Date</th>
-                        <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b whitespace-nowrap" style={{width: '11%'}}>Remarks</th>
+                        <th className="px-1.5 sm:px-2 py-1.5 sm:py-2 text-left text-[9px] sm:text-[10px] font-semibold text-gray-600 uppercase tracking-wider border-b border-r" style={{width: '15%'}}>Stage Name</th>
+                        <th className="px-2 sm:px-2.5 py-1.5 sm:py-2 text-left text-[9px] sm:text-[10px] font-semibold text-gray-600 uppercase tracking-wider border-b border-r whitespace-nowrap" style={{width: '13%'}}>Stage Owner</th>
+                        <th className="px-1.5 sm:px-2 py-1.5 sm:py-2 text-left text-[9px] sm:text-[10px] font-semibold text-gray-600 uppercase tracking-wider border-b border-r whitespace-nowrap" style={{width: '6%'}}>Weight</th>
+                        <th className="px-2 sm:px-2.5 py-1.5 sm:py-2 text-left text-[9px] sm:text-[10px] font-semibold text-gray-600 uppercase tracking-wider border-b border-r whitespace-nowrap" style={{width: '12%'}}>Status</th>
+                        <th className="px-1 sm:px-1.5 py-1.5 sm:py-2 text-left text-[9px] sm:text-[10px] font-semibold text-gray-600 uppercase tracking-wider border-b border-r whitespace-nowrap" style={{width: '9%'}}>Planned Start</th>
+                        <th className="px-1 sm:px-1.5 py-1.5 sm:py-2 text-left text-[9px] sm:text-[10px] font-semibold text-gray-600 uppercase tracking-wider border-b border-r whitespace-nowrap" style={{width: '9%'}}>Planned End</th>
+                        <th className="px-1.5 sm:px-2 py-1.5 sm:py-2 text-left text-[9px] sm:text-[10px] font-semibold text-gray-600 uppercase tracking-wider border-b border-r whitespace-nowrap" style={{width: '10%'}}>Actual Start</th>
+                        <th className="px-1.5 sm:px-2 py-1.5 sm:py-2 text-left text-[9px] sm:text-[10px] font-semibold text-gray-600 uppercase tracking-wider border-b border-r whitespace-nowrap" style={{width: '10%'}}>Actual End</th>
+                        <th className="px-1.5 sm:px-2 py-1.5 sm:py-2 text-left text-[9px] sm:text-[10px] font-semibold text-gray-600 uppercase tracking-wider border-b whitespace-nowrap" style={{width: '16%'}}>Remarks</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 bg-white">
@@ -971,44 +972,44 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                                 index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'
                               } hover:bg-[#2563eb]/5`}
                             >
-                              <td className="px-4 py-3 text-base font-semibold text-[#111827] border-r break-words">
-                                <div className="flex items-center gap-2">
+                              <td className="px-1.5 sm:px-2 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold text-[#111827] border-r break-words">
+                                <div className="flex items-center gap-1">
                                   {stage.name === "Development" && (
                                     <button
                                       onClick={() => toggleStageExpansion(index)}
-                                      className="flex items-center justify-center w-6 h-6 rounded hover:bg-gray-100 transition-colors duration-200"
+                                      className="flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 rounded hover:bg-gray-100 transition-colors duration-200 flex-shrink-0"
                                       aria-label={expandedStages.has(index) ? "Collapse milestones" : "Expand milestones"}
                                     >
                                       <motion.div
                                         animate={{ rotate: expandedStages.has(index) ? 180 : 0 }}
                                         transition={{ duration: 0.2 }}
                                       >
-                                        <ChevronDown className="w-4 h-4 text-gray-600" />
+                                        <ChevronDown className="w-3 h-3 text-gray-600" />
                                       </motion.div>
                                     </button>
                                   )}
-                                  <span>{stage.name}</span>
+                                  <span className="break-words leading-tight">{stage.name}</span>
                                 </div>
                               </td>
-                              <td className="px-4 py-3 border-r">
+                              <td className="px-2 sm:px-2.5 py-1.5 sm:py-2 border-r">
                                 <motion.textarea
                                   value={stage.stageOwner || ""}
                                   onChange={(e) => handleStageChange(index, "stageOwner", e.target.value)}
-                                  placeholder="Enter owner..."
+                                  placeholder="Owner..."
                                   animate={isStageOwnerHighlighted ? {
                                     backgroundColor: ["#fef3c7", "#ffffff"],
                                   } : {}}
                                   transition={{ duration: 2 }}
-                                  className={`w-full px-3 py-2 text-sm border border-gray-200 rounded-2xl bg-white text-[#111827] placeholder-gray-400 font-medium focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent transition-all duration-200 resize-none overflow-hidden ${isStageOwnerHighlighted ? 'bg-yellow-100' : ''}`}
-                                  style={{ minWidth: '150px', minHeight: '38px', maxHeight: '76px' }}
+                                  className={`w-full px-2 sm:px-2.5 py-1 sm:py-1.5 text-[10px] sm:text-xs border border-gray-200 rounded-lg sm:rounded-xl bg-white text-[#111827] placeholder-gray-400 font-medium focus:outline-none focus:ring-1 focus:ring-[#2563eb] focus:border-transparent transition-all duration-200 resize-none overflow-hidden ${isStageOwnerHighlighted ? 'bg-yellow-100' : ''}`}
+                                  style={{ minWidth: '100px', minHeight: '28px', maxHeight: '56px' }}
                                   rows={1}
                                   onInput={(e) => {
                                     e.target.style.height = 'auto';
-                                    e.target.style.height = Math.min(e.target.scrollHeight, 76) + 'px';
+                                    e.target.style.height = Math.min(e.target.scrollHeight, 56) + 'px';
                                   }}
                                 />
                               </td>
-                              <td className="px-4 py-3 border-r">
+                              <td className="px-1.5 sm:px-2 py-1.5 sm:py-2 border-r">
                                 <div className="relative">
                                   <motion.input
                                     type="text"
@@ -1034,13 +1035,13 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                                       }
                                     }}
                                     placeholder="0"
-                                    className="w-full px-3 py-2 pr-6 text-sm border border-gray-200 rounded-2xl bg-white text-[#111827] placeholder-gray-400 font-medium focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent transition-all duration-200 text-center"
-                                    style={{ minWidth: '60px' }}
+                                    className="w-full px-1.5 sm:px-2 py-1 sm:py-1.5 pr-4 sm:pr-5 text-[10px] sm:text-xs border border-gray-200 rounded-lg sm:rounded-xl bg-white text-[#111827] placeholder-gray-400 font-medium focus:outline-none focus:ring-1 focus:ring-[#2563eb] focus:border-transparent transition-all duration-200 text-center"
+                                    style={{ minWidth: '40px' }}
                                   />
-                                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-gray-500 pointer-events-none">%</span>
+                                  <span className="absolute right-1.5 sm:right-2 top-1/2 transform -translate-y-1/2 text-[10px] sm:text-xs text-gray-500 pointer-events-none">%</span>
                                 </div>
                               </td>
-                              <td className="px-4 py-3 border-r">
+                              <td className="px-2 sm:px-2.5 py-1.5 sm:py-2 border-r">
                                 <motion.div
                                   animate={isStatusHighlighted ? {
                                     backgroundColor: ["#fef3c7", "#ffffff"],
@@ -1050,8 +1051,8 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                                   <select
                                     value={stage.status}
                                     onChange={(e) => handleStageChange(index, "status", e.target.value)}
-                                    className={`input-modern text-sm font-medium whitespace-nowrap ${getStatusColor(stage.status)} ${isStatusHighlighted ? 'bg-yellow-100' : ''}`}
-                                    style={{ minWidth: '130px' }}
+                                    className={`input-modern text-[10px] sm:text-xs font-medium whitespace-nowrap px-2 sm:px-2.5 py-1 sm:py-1.5 ${getStatusColor(stage.status)} ${isStatusHighlighted ? 'bg-yellow-100' : ''}`}
+                                    style={{ minWidth: '95px' }}
                                   >
                                     <option value="Yet to Start">Yet to Start</option>
                                     <option value="In Progress">In Progress</option>
@@ -1060,7 +1061,7 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                                   </select>
                                 </motion.div>
                               </td>
-                              <td className="px-4 py-3 border-r">
+                              <td className="px-1 sm:px-1.5 py-1.5 sm:py-2 border-r">
                                 <motion.input
                                   type="date"
                                   value={stage.startDate || ""}
@@ -1071,12 +1072,12 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                                     scale: [1, 1.02, 1],
                                   } : {}}
                                   transition={{ duration: 0.5 }}
-                                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-2xl bg-gray-50 text-gray-500 cursor-not-allowed font-medium"
+                                  className="w-full px-1 sm:px-1.5 py-1 sm:py-1.5 text-[10px] sm:text-xs border border-gray-200 rounded-lg sm:rounded-xl bg-gray-50 text-gray-500 cursor-not-allowed font-medium"
                                   title="Planned dates are calculated automatically based on project dates and stage weights"
-                                  style={{ minWidth: '140px' }}
+                                  style={{ minWidth: '90px' }}
                                 />
                               </td>
-                              <td className="px-4 py-3 border-r">
+                              <td className="px-1 sm:px-1.5 py-1.5 sm:py-2 border-r">
                                 <motion.input
                                   type="date"
                                   value={stage.endDate || ""}
@@ -1087,12 +1088,12 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                                     scale: [1, 1.02, 1],
                                   } : {}}
                                   transition={{ duration: 0.5 }}
-                                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-2xl bg-gray-50 text-gray-500 cursor-not-allowed font-medium"
+                                  className="w-full px-1 sm:px-1.5 py-1 sm:py-1.5 text-[10px] sm:text-xs border border-gray-200 rounded-lg sm:rounded-xl bg-gray-50 text-gray-500 cursor-not-allowed font-medium"
                                   title="Planned dates are calculated automatically based on project dates and stage weights"
-                                  style={{ minWidth: '140px' }}
+                                  style={{ minWidth: '90px' }}
                                 />
                               </td>
-                              <td className="px-4 py-3 border-r">
+                              <td className="px-1.5 sm:px-2 py-1.5 sm:py-2 border-r">
                                 <motion.input
                                   type="date"
                                   value={stage.actualStartDate || ""}
@@ -1101,11 +1102,11 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                                     backgroundColor: ["#fef3c7", "#ffffff"],
                                   } : {}}
                                   transition={{ duration: 2 }}
-                                  className={`w-full px-3 py-2 text-sm border border-gray-200 rounded-2xl bg-white text-[#111827] placeholder-gray-400 font-medium focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent transition-all duration-200 ${isActualStartHighlighted ? 'bg-yellow-100' : ''}`}
-                                  style={{ minWidth: '140px' }}
+                                  className={`w-full px-1.5 sm:px-2 py-1 sm:py-1.5 text-[10px] sm:text-xs border border-gray-200 rounded-lg sm:rounded-xl bg-white text-[#111827] placeholder-gray-400 font-medium focus:outline-none focus:ring-1 focus:ring-[#2563eb] focus:border-transparent transition-all duration-200 ${isActualStartHighlighted ? 'bg-yellow-100' : ''}`}
+                                  style={{ minWidth: '95px' }}
                                 />
                               </td>
-                              <td className="px-4 py-3 border-r">
+                              <td className="px-1.5 sm:px-2 py-1.5 sm:py-2 border-r">
                                 <motion.input
                                   type="date"
                                   value={stage.actualEndDate || ""}
@@ -1114,11 +1115,11 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                                     backgroundColor: ["#fef3c7", "#ffffff"],
                                   } : {}}
                                   transition={{ duration: 2 }}
-                                  className={`w-full px-3 py-2 text-sm border border-gray-200 rounded-2xl bg-white text-[#111827] placeholder-gray-400 font-medium focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent transition-all duration-200 ${isActualEndHighlighted ? 'bg-yellow-100' : ''}`}
-                                  style={{ minWidth: '140px' }}
+                                  className={`w-full px-1.5 sm:px-2 py-1 sm:py-1.5 text-[10px] sm:text-xs border border-gray-200 rounded-lg sm:rounded-xl bg-white text-[#111827] placeholder-gray-400 font-medium focus:outline-none focus:ring-1 focus:ring-[#2563eb] focus:border-transparent transition-all duration-200 ${isActualEndHighlighted ? 'bg-yellow-100' : ''}`}
+                                  style={{ minWidth: '95px' }}
                                 />
                               </td>
-                              <td className="px-4 py-3">
+                              <td className="px-1.5 sm:px-2 py-1.5 sm:py-2">
                                 <motion.input
                                   type="text"
                                   value={stage.remarks || ""}
@@ -1128,7 +1129,7 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                                     backgroundColor: ["#fef3c7", "#ffffff"],
                                   } : {}}
                                   transition={{ duration: 2 }}
-                                  className={`input-modern text-sm ${isRemarksHighlighted ? 'bg-yellow-100' : ''}`}
+                                  className={`input-modern text-[10px] sm:text-xs px-1.5 sm:px-2 py-1 sm:py-1.5 ${isRemarksHighlighted ? 'bg-yellow-100' : ''}`}
                                 />
                               </td>
                             </motion.tr>,
@@ -1294,8 +1295,8 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
 
             {/* Overall Project Summary Section */}
             <div className="flex-shrink-0">
-              <h3 className="text-lg font-semibold text-[#111827] mb-4">Overall Project Summary</h3>
-              <div className="card-modern p-5">
+              <h3 className="text-base sm:text-lg font-semibold text-[#111827] mb-3 sm:mb-4">Overall Project Summary</h3>
+              <div className="card-modern p-3 sm:p-4 md:p-5">
                 <motion.textarea
                   value={overallProjectSummary}
                   onChange={(e) => {
@@ -1314,8 +1315,8 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
 
             {/* Logs Section */}
             <div className="flex-shrink-0" ref={logsSectionRef}>
-              <h3 className="text-lg font-semibold text-[#111827] mb-4">Logs</h3>
-              <div className="card-modern p-4 max-h-[250px] overflow-y-auto">
+              <h3 className="text-base sm:text-lg font-semibold text-[#111827] mb-3 sm:mb-4">Logs</h3>
+              <div className="card-modern p-3 sm:p-4 max-h-[200px] sm:max-h-[250px] overflow-y-auto">
                 {logs.length === 0 ? (
                   <p className="text-sm text-gray-400 italic text-center py-8">
                     No changes logged yet. Changes to Project Stages and Overall Project Summary will appear here.
@@ -1375,22 +1376,22 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
           </div>
 
           {/* Sticky Footer with Save Changes Button */}
-          <div className="flex-shrink-0 bg-white border-t border-gray-200 px-6 py-4 flex justify-end gap-3 shadow-lg">
+          <div className="flex-shrink-0 bg-white border-t border-gray-200 px-3 sm:px-4 md:px-6 py-3 sm:py-4 flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 shadow-lg">
             <button
               type="button"
               onClick={onClose}
-              className="btn-secondary"
+              className="btn-secondary text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-2.5 order-2 sm:order-1"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary"
+              className="btn-primary text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-2.5 order-1 sm:order-2"
             >
               {loading ? (
                 <>
-                  <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                  <span className="inline-block animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white mr-2"></span>
                   Saving...
                 </>
               ) : (
