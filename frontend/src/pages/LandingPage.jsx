@@ -42,7 +42,7 @@ const LandingPage = () => {
 
   const handleUpdate = () => {
     fetchProjects();
-    toast.success("Project status updated successfully!");
+    // Toast notification is handled in EditStatusModal component
   };
 
   const handleDelete = async (project) => {

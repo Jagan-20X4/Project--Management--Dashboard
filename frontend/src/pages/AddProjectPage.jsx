@@ -33,14 +33,12 @@ const AddProjectPage = () => {
   ];
 
   const techDepartments = [
-    "Frontend",
-    "Backend",
-    "Full Stack",
-    "DevOps",
-    "QA",
-    "Mobile",
-    "Data Science",
-    "AI/ML",
+    "ERP",
+    "DATA",
+    "CISO",
+    "HIS",
+    "Infrastrucure",
+    "GTM",
   ];
 
   const handleChange = (e) => {

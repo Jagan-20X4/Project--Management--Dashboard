@@ -1,17 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-toastify";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, X, Plus } from "lucide-react";
 import { updateProjectStages, getProjectLogs, getBusinessCase } from "../api/projectAPI";
 import { calculatePhaseDates, validateDateRange } from "../utils/dateCalculator";
-
-const developmentMilestonesConfig = [
-  { name: "Milestone 1", percentage: 20 },
-  { name: "Milestone 2", percentage: 20 },
-  { name: "Milestone 3", percentage: 20 },
-  { name: "Milestone 4", percentage: 20 },
-  { name: "Milestone 5", percentage: 20 }
-];
 
 const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
   const [stages, setStages] = useState([]);
@@ -32,6 +24,7 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
   const [initialMilestoneNotes, setInitialMilestoneNotes] = useState({});
   const [businessCases, setBusinessCases] = useState([]);
   const logsSectionRef = useRef(null);
+  const [milestoneCounters, setMilestoneCounters] = useState({});
 
   useEffect(() => {
     if (project) {
@@ -40,42 +33,56 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
       const projectEndDate = project.endDate || "";
       const projectSummary = project.overallProjectSummary || "";
       
-      setStages(projectStages);
       setStartDate(projectStartDate);
       setEndDate(projectEndDate);
       setOverallProjectSummary(projectSummary);
       
-      // Store initial values for comparison
+      // Initialize milestones for Development stage
+      const developmentIndex = projectStages.findIndex(s => s.name === "Development");
+      if (developmentIndex !== -1) {
+        const developmentStage = projectStages[developmentIndex];
+        // If milestones don't exist, initialize with default ones
+        if (!developmentStage.milestones || developmentStage.milestones.length === 0) {
+          const defaultMilestones = [
+            { id: 1, title: "Milestone 1", stageName: "", owner: "", remarks: "" },
+            { id: 2, title: "Milestone 2", stageName: "", owner: "", remarks: "" },
+            { id: 3, title: "Milestone 3", stageName: "", owner: "", remarks: "" }
+          ];
+          projectStages[developmentIndex] = {
+            ...developmentStage,
+            milestones: defaultMilestones
+          };
+        } else {
+          // Ensure milestones have IDs and proper structure
+          // Clear stageName if it matches the parent stage name (to start empty)
+          const parentStageName = developmentStage.name || "Development";
+          const milestonesWithIds = developmentStage.milestones.map((milestone, idx) => ({
+            id: milestone.id || idx + 1,
+            title: milestone.title || `Milestone ${milestone.id || idx + 1}`,
+            stageName: (milestone.stageName && milestone.stageName !== parentStageName) ? milestone.stageName : "",
+            owner: milestone.owner || "",
+            remarks: milestone.remarks || ""
+          }));
+          projectStages[developmentIndex] = {
+            ...developmentStage,
+            milestones: milestonesWithIds
+          };
+        }
+        // Set milestone counter for this stage
+        const maxId = Math.max(...(projectStages[developmentIndex].milestones.map(m => m.id || 0)), 0);
+        setMilestoneCounters(prev => ({
+          ...prev,
+          [developmentIndex]: maxId + 1
+        }));
+      }
+      
+      setStages(projectStages);
+      
+      // Store initial values for comparison (after milestones are initialized)
       setInitialStages(JSON.parse(JSON.stringify(projectStages)));
       setInitialStartDate(projectStartDate);
       setInitialEndDate(projectEndDate);
       setInitialOverallProjectSummary(projectSummary);
-      
-      // Initialize milestone notes for Development stage
-      const developmentIndex = projectStages.findIndex(s => s.name === "Development");
-      if (developmentIndex !== -1) {
-        const initialNotes = {
-          [`${developmentIndex}-0`]: "",
-          [`${developmentIndex}-1`]: "",
-          [`${developmentIndex}-2`]: "",
-          [`${developmentIndex}-3`]: "",
-          [`${developmentIndex}-4`]: ""
-        };
-        setMilestoneNotes(prev => {
-          if (prev[developmentIndex]) {
-            return prev;
-          }
-          return {
-            ...prev,
-            ...initialNotes
-          };
-        });
-        // Store initial milestone notes for comparison
-        setInitialMilestoneNotes(prev => ({
-          ...prev,
-          ...initialNotes
-        }));
-      }
       
       // Clear pending changes when opening a new project
       setPendingChanges([]);
@@ -130,72 +137,6 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
     return date;
   };
 
-  const calculateDevelopmentMilestoneRanges = (stage) => {
-    if (!stage?.startDate || !stage?.endDate) {
-      return developmentMilestonesConfig.map(() => null);
-    }
-    const start = parseDateSafe(stage.startDate);
-    const end = parseDateSafe(stage.endDate);
-    if (!start || !end || end < start) {
-      return developmentMilestonesConfig.map(() => null);
-    }
-    const DAY_MS = 24 * 60 * 60 * 1000;
-    const totalDays = Math.floor((end - start) / DAY_MS) + 1;
-    if (totalDays <= 0) {
-      return developmentMilestonesConfig.map(() => null);
-    }
-
-    let usedDays = 0;
-    const totalMilestones = developmentMilestonesConfig.length;
-
-    return developmentMilestonesConfig.map((milestone, idx) => {
-      const remainingMilestones = totalMilestones - idx - 1;
-      const remainingDays = totalDays - usedDays;
-      let daysForMilestone;
-
-      if (idx === totalMilestones - 1) {
-        daysForMilestone = Math.max(0, remainingDays);
-      } else {
-        daysForMilestone = Math.round(totalDays * (milestone.percentage / 100));
-        if (daysForMilestone < 0) daysForMilestone = 0;
-
-        const minRemaining = Math.max(0, remainingMilestones);
-        if (daysForMilestone > remainingDays) {
-          daysForMilestone = Math.max(0, remainingDays - minRemaining);
-        }
-
-        if (daysForMilestone === 0 && remainingDays > minRemaining) {
-          daysForMilestone = 1;
-        }
-      }
-
-      const milestoneStart = new Date(start);
-      milestoneStart.setDate(milestoneStart.getDate() + usedDays);
-
-      let milestoneEnd = new Date(milestoneStart);
-      if (daysForMilestone > 0) {
-        milestoneEnd.setDate(milestoneEnd.getDate() + daysForMilestone - 1);
-      }
-      if (milestoneEnd > end) {
-        milestoneEnd = new Date(end);
-        daysForMilestone = Math.floor((milestoneEnd - milestoneStart) / DAY_MS) + 1;
-      }
-
-      usedDays += Math.max(daysForMilestone, 0);
-      if (idx === totalMilestones - 1) {
-        milestoneEnd = new Date(end);
-        usedDays = totalDays;
-        daysForMilestone = Math.max(daysForMilestone, Math.floor((milestoneEnd - milestoneStart) / DAY_MS) + 1);
-      }
-
-      return {
-        start: formatDateObject(milestoneStart),
-        end: daysForMilestone > 0 ? formatDateObject(milestoneEnd) : formatDateObject(milestoneStart),
-        days: Math.max(daysForMilestone, 0),
-        percentage: milestone.percentage
-      };
-    });
-  };
 
   const fetchBusinessCase = async () => {
     if (!project?._id) return;
@@ -404,28 +345,84 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
     });
   };
 
-  const handleMilestoneNoteChange = (stageIndex, milestoneIndex, value) => {
-    const milestoneKey = `${stageIndex}-${milestoneIndex}`;
-    const initialValue = initialMilestoneNotes[milestoneKey] || "";
-    const stageName = stages[stageIndex]?.name || "Development";
-    const milestoneName = `Milestone ${milestoneIndex + 1}`;
+  const handleMilestoneChange = (stageIndex, milestoneId, field, value) => {
+    const updatedStages = [...stages];
+    const stage = updatedStages[stageIndex];
+    if (!stage.milestones) {
+      stage.milestones = [];
+    }
     
-    setMilestoneNotes(prev => ({
-      ...prev,
-      [milestoneKey]: value
-    }));
+    const milestoneIndex = stage.milestones.findIndex(m => m.id === milestoneId);
+    if (milestoneIndex !== -1) {
+      const initialMilestone = initialStages[stageIndex]?.milestones?.[milestoneIndex];
+      const initialValue = initialMilestone?.[field] || "";
+      
+      stage.milestones[milestoneIndex] = {
+        ...stage.milestones[milestoneIndex],
+        [field]: value
+      };
+      
+      setStages(updatedStages);
+      
+      // Track as pending change
+      const stageName = stage.name || "Development";
+      const milestoneTitle = stage.milestones[milestoneIndex].title || `Milestone ${milestoneId}`;
+      const fieldDisplayName = {
+        stageName: "Milestone Stage Name",
+        owner: "Milestone Owner",
+        remarks: "Milestone Remarks"
+      }[field] || field;
+      
+      if (initialValue !== value) {
+        addPendingChange(fieldDisplayName, initialValue || "(empty)", value || "(empty)", `${stageName} - ${milestoneTitle}`);
+      } else {
+        setPendingChanges(prev => 
+          prev.filter(change => 
+            !(change.fieldName === fieldDisplayName && 
+              change.stageName === `${stageName} - ${milestoneTitle}`)
+          )
+        );
+      }
+    }
+  };
 
-    // Track as pending change (don't log immediately)
-    if (initialValue !== value) {
-      addPendingChange("Milestone Notes", initialValue || "(empty)", value || "(empty)", `${stageName} - ${milestoneName}`);
-    } else {
-      // Remove from pending if reverted to initial value
-      setPendingChanges(prev => 
-        prev.filter(change => 
-          !(change.fieldName === "Milestone Notes" && 
-            change.stageName === `${stageName} - ${milestoneName}`)
-        )
-      );
+  const handleAddMilestone = (stageIndex) => {
+    const updatedStages = [...stages];
+    const stage = updatedStages[stageIndex];
+    if (!stage.milestones) {
+      stage.milestones = [];
+    }
+    
+    const nextId = milestoneCounters[stageIndex] || stage.milestones.length + 1;
+    const newMilestone = {
+      id: nextId,
+      title: `Milestone ${nextId}`,
+      stageName: "",
+      owner: "",
+      remarks: ""
+    };
+    
+    stage.milestones = [...stage.milestones, newMilestone];
+    setStages(updatedStages);
+    setMilestoneCounters(prev => ({
+      ...prev,
+      [stageIndex]: nextId + 1
+    }));
+  };
+
+  const handleDeleteMilestone = (stageIndex, milestoneId) => {
+    const updatedStages = [...stages];
+    const stage = updatedStages[stageIndex];
+    if (stage.milestones) {
+      const milestone = stage.milestones.find(m => m.id === milestoneId);
+      const milestoneTitle = milestone?.title || `Milestone ${milestoneId}`;
+      const stageName = stage.name || "Development";
+      
+      stage.milestones = stage.milestones.filter(m => m.id !== milestoneId);
+      setStages(updatedStages);
+      
+      // Track deletion as pending change
+      addPendingChange("Milestone Deleted", milestoneTitle, "(deleted)", `${stageName} - ${milestoneTitle}`);
     }
   };
 
@@ -517,12 +514,8 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
         position: "top-right",
         autoClose: 2000,
       });
-    } else {
-      toast.info("No date changes needed. Dates are already calculated.", {
-        position: "top-right",
-        autoClose: 2000,
-      });
     }
+    // No toast shown when no date changes are needed
   };
 
   const collectAllChanges = () => {
@@ -617,29 +610,64 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
       });
     });
     
-    // Check for milestone note changes
-    Object.keys(milestoneNotes).forEach(milestoneKey => {
-      const initialValue = initialMilestoneNotes[milestoneKey] || "";
-      const currentValue = milestoneNotes[milestoneKey] || "";
-      
-      if (initialValue !== currentValue) {
-        // Parse milestone key to get stage index and milestone index
-        const [stageIndex, milestoneIndex] = milestoneKey.split('-').map(Number);
-        const stageName = stages[stageIndex]?.name || "Development";
-        const milestoneName = `Milestone ${milestoneIndex + 1}`;
-        const fullStageName = `${stageName} - ${milestoneName}`;
+    // Check for milestone changes
+    stages.forEach((stage, stageIndex) => {
+      if (stage.milestones && stage.milestones.length > 0) {
+        const initialStage = initialStages[stageIndex];
+        const initialMilestones = initialStage?.milestones || [];
+        const stageName = stage.name || "Development";
         
-        const key = `Milestone Notes-${fullStageName}-${initialValue}-${currentValue}`;
-        if (!changeKeys.has(key)) {
-          changeKeys.add(key);
-          allChanges.push({
-            id: Date.now() + Math.random(),
-            fieldName: "Milestone Notes",
-            previousValue: initialValue || "(empty)",
-            newValue: currentValue || "(empty)",
-            stageName: fullStageName
+        stage.milestones.forEach((milestone, milestoneIndex) => {
+          const initialMilestone = initialMilestones.find(m => m.id === milestone.id) || {};
+          const milestoneTitle = milestone.title || `Milestone ${milestone.id}`;
+          const fullStageName = `${stageName} - ${milestoneTitle}`;
+          
+          // Check each field
+          ['stageName', 'owner', 'remarks'].forEach(field => {
+            const initialValue = initialMilestone[field] || "";
+            const currentValue = milestone[field] || "";
+            
+            if (initialValue !== currentValue) {
+              const fieldDisplayName = {
+                stageName: "Milestone Stage Name",
+                owner: "Milestone Owner",
+                remarks: "Milestone Remarks"
+              }[field] || field;
+              
+              const key = `${fieldDisplayName}-${fullStageName}-${initialValue}-${currentValue}`;
+              if (!changeKeys.has(key)) {
+                changeKeys.add(key);
+                allChanges.push({
+                  id: Date.now() + Math.random(),
+                  fieldName: fieldDisplayName,
+                  previousValue: initialValue || "(empty)",
+                  newValue: currentValue || "(empty)",
+                  stageName: fullStageName
+                });
+              }
+            }
           });
-        }
+        });
+        
+        // Check for deleted milestones
+        initialMilestones.forEach(initialMilestone => {
+          const exists = stage.milestones.find(m => m.id === initialMilestone.id);
+          if (!exists) {
+            const milestoneTitle = initialMilestone.title || `Milestone ${initialMilestone.id}`;
+            const fullStageName = `${stageName} - ${milestoneTitle}`;
+            const key = `Milestone Deleted-${fullStageName}-${milestoneTitle}-(deleted)`;
+            if (!changeKeys.has(key)) {
+              changeKeys.add(key);
+              allChanges.push({
+                id: Date.now() + Math.random(),
+                fieldName: "Milestone Deleted",
+                previousValue: milestoneTitle,
+                newValue: "(deleted)",
+                stageName: fullStageName
+              });
+            }
+          }
+        });
       }
     });
     
@@ -656,12 +684,8 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
       console.log("All changes collected:", allChanges);
       
       if (allChanges.length === 0) {
-        // No changes detected, just save the project
+        // No changes detected, just save the project silently
         await updateProjectStages(project._id, stages, startDate, endDate, [], overallProjectSummary);
-        toast.info("No changes detected. Project saved.", {
-          position: "top-right",
-          autoClose: 2000,
-        });
         onUpdate();
         setLoading(false);
         return;
@@ -721,11 +745,22 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
       setInitialOverallProjectSummary(overallProjectSummary);
       setInitialMilestoneNotes(JSON.parse(JSON.stringify(milestoneNotes)));
       
+      // Update milestone counters based on current milestones
+      stages.forEach((stage, stageIndex) => {
+        if (stage.milestones && stage.milestones.length > 0) {
+          const maxId = Math.max(...(stage.milestones.map(m => m.id || 0)), 0);
+          setMilestoneCounters(prev => ({
+            ...prev,
+            [stageIndex]: maxId + 1
+          }));
+        }
+      });
+      
       // Clear pending changes
       setPendingChanges([]);
       
-      // Show success toast
-      toast.success(`Successfully saved ${allChanges.length} change(s)!`, {
+      // Show success toast only when actual changes are made
+      toast.success("Project status updated successfully!", {
         position: "top-right",
         autoClose: 3000,
       });
@@ -895,18 +930,7 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                           
                           const isDevelopmentStage = stage.name === "Development";
                           const showMilestones = isDevelopmentStage && expandedStages.has(index);
-                          const milestoneRanges = showMilestones ? calculateDevelopmentMilestoneRanges(stage) : [];
-
-                          const stageSummaryItems = [
-                            { label: "Stage Owner", value: stage.stageOwner || "Not specified" },
-                            { label: "Weight", value: `${stage.weight ?? 0}%` },
-                            { label: "Status", value: stage.status || "Yet to Start" },
-                            { label: "Planned Start Date", value: formatDateForDisplay(stage.startDate) || "Not set" },
-                            { label: "Planned End Date", value: formatDateForDisplay(stage.endDate) || "Not set" },
-                            { label: "Actual Start Date", value: formatDateForDisplay(stage.actualStartDate) || "Not set" },
-                            { label: "Actual End Date", value: formatDateForDisplay(stage.actualEndDate) || "Not set" },
-                            { label: "Remarks", value: stage.remarks || "—" }
-                          ];
+                          const milestones = showMilestones ? (stage.milestones || []) : [];
 
                           return [
                             <motion.tr
@@ -1083,77 +1107,97 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                             ...(showMilestones
                               ? [
                                   <motion.tr
-                                    key={`development-summary-${index}`}
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: "auto" }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                    transition={{ duration: 0.25 }}
+                                    key={`milestones-header-${index}`}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
                                     className="bg-white"
                                   >
-                                    <td colSpan="9" className="px-6 py-4 border-t border-gray-200">
-                                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                        {stageSummaryItems.map(item => (
-                                          <div key={item.label} className="bg-gray-50 rounded-2xl px-4 py-3">
-                                            <div className="text-xs font-semibold uppercase tracking-wide text-gray-400">
-                                              {item.label}
-                                            </div>
-                                            <div className="mt-1 text-sm font-semibold text-[#111827] break-words">
-                                              {item.value}
-                                            </div>
-                                          </div>
-                                        ))}
+                                    <td colSpan="9" className="px-6 py-3 border-t border-gray-200 bg-gray-50">
+                                      <div className="grid grid-cols-12 gap-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                        <div className="col-span-2">Milestone Title</div>
+                                        <div className="col-span-3">Stage Name</div>
+                                        <div className="col-span-3">Stage Owner</div>
+                                        <div className="col-span-3">Remarks</div>
+                                        <div className="col-span-1"></div>
                                       </div>
                                     </td>
                                   </motion.tr>,
-                                  ...developmentMilestonesConfig.map((milestone, milestoneIndex) => {
-                                    const milestoneRange = milestoneRanges[milestoneIndex];
-                                    const milestoneKey = `${index}-${milestoneIndex}`;
-                                    const plannedRange = milestoneRange
-                                      ? `${milestoneRange.start} → ${milestoneRange.end}`
-                                      : "Planned dates not set";
-                                    const durationLabel = milestoneRange?.days
-                                      ? `${milestoneRange.days} day${milestoneRange.days !== 1 ? "s" : ""}`
-                                      : "—";
-
-                                    return (
-                                      <motion.tr
-                                        key={`milestone-${milestoneIndex}`}
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: "auto" }}
-                                        exit={{ opacity: 0, height: 0 }}
-                                        transition={{ duration: 0.3, delay: milestoneIndex * 0.05 }}
-                                        className="bg-[#f9fafb] hover:bg-[#f3f4f6] transition-colors duration-150"
+                                  ...milestones.map((milestone, milestoneIndex) => (
+                                    <motion.tr
+                                      key={`milestone-${milestone.id || milestoneIndex}`}
+                                      initial={{ opacity: 0, height: 0 }}
+                                      animate={{ opacity: 1, height: "auto" }}
+                                      exit={{ opacity: 0, height: 0 }}
+                                      transition={{ duration: 0.3, delay: milestoneIndex * 0.05 }}
+                                      className="bg-white hover:bg-gray-50/50 transition-colors duration-150 border-b border-gray-100"
+                                    >
+                                      <td colSpan="9" className="px-6 py-4">
+                                        <div className="grid grid-cols-12 gap-3 items-center">
+                                          <div className="col-span-2">
+                                            <div className="text-sm font-semibold text-[#111827]">
+                                              {milestone.title || `Milestone ${milestone.id || milestoneIndex + 1}`}
+                                            </div>
+                                          </div>
+                                          <div className="col-span-3">
+                                            <input
+                                              type="text"
+                                              value={milestone.stageName || ""}
+                                              onChange={(e) => handleMilestoneChange(index, milestone.id, "stageName", e.target.value)}
+                                              placeholder="Enter stage name..."
+                                              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-white text-[#111827] placeholder-gray-400 font-medium focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent transition-all duration-200"
+                                            />
+                                          </div>
+                                          <div className="col-span-3">
+                                            <input
+                                              type="text"
+                                              value={milestone.owner || ""}
+                                              onChange={(e) => handleMilestoneChange(index, milestone.id, "owner", e.target.value)}
+                                              placeholder="Enter owner..."
+                                              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-white text-[#111827] placeholder-gray-400 font-medium focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent transition-all duration-200"
+                                            />
+                                          </div>
+                                          <div className="col-span-3">
+                                            <input
+                                              type="text"
+                                              value={milestone.remarks || ""}
+                                              onChange={(e) => handleMilestoneChange(index, milestone.id, "remarks", e.target.value)}
+                                              placeholder="Enter remarks..."
+                                              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-white text-[#111827] placeholder-gray-400 font-medium focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent transition-all duration-200"
+                                            />
+                                          </div>
+                                          <div className="col-span-1 flex justify-end">
+                                            <button
+                                              type="button"
+                                              onClick={() => handleDeleteMilestone(index, milestone.id)}
+                                              className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                                              aria-label="Delete milestone"
+                                            >
+                                              <X className="w-4 h-4" />
+                                            </button>
+                                          </div>
+                                        </div>
+                                      </td>
+                                    </motion.tr>
+                                  )),
+                                  <motion.tr
+                                    key={`add-milestone-${index}`}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="bg-white"
+                                  >
+                                    <td colSpan="9" className="px-6 py-3 border-t border-gray-200">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleAddMilestone(index)}
+                                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#2563eb] hover:text-[#1d4ed8] hover:bg-blue-50 rounded-xl transition-colors duration-200"
                                       >
-                                        <td className="px-4 py-3 text-sm font-medium text-[#111827] border-r break-words pl-12">
-                                          <div>{milestone.name}</div>
-                                          <div className="text-xs text-gray-500 font-semibold">
-                                            {milestone.percentage}% of stage
-                                          </div>
-                                        </td>
-                                        <td colSpan="8" className="px-4 py-3 space-y-3">
-                                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                                            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                              Planned Window:{" "}
-                                              <span className="text-gray-700 capitalize normal-case">
-                                                {plannedRange}
-                                              </span>
-                                            </div>
-                                            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                                              Duration:{" "}
-                                              <span className="text-gray-700 normal-case">{durationLabel}</span>
-                                            </div>
-                                          </div>
-                                          <input
-                                            type="text"
-                                            value={milestoneNotes[milestoneKey] || ""}
-                                            onChange={(e) => handleMilestoneNoteChange(index, milestoneIndex, e.target.value)}
-                                            placeholder="Enter milestone notes..."
-                                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-2xl bg-white text-[#111827] placeholder-gray-400 font-medium focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent transition-all duration-200"
-                                          />
-                                        </td>
-                                      </motion.tr>
-                                    );
-                                  })
+                                        <Plus className="w-4 h-4" />
+                                        Add More Milestone
+                                      </button>
+                                    </td>
+                                  </motion.tr>
                                 ]
                               : []
                             )

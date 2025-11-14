@@ -1,5 +1,12 @@
 import mongoose from "mongoose";
 
+const milestoneSchema = new mongoose.Schema({
+  title: { type: String, default: "" },
+  stageName: { type: String, default: "" },
+  owner: { type: String, default: "" },
+  remarks: { type: String, default: "" }
+}, { _id: false });
+
 const stageSchema = new mongoose.Schema({
   name: { type: String, required: true },
   stageOwner: { type: String, default: "" },
@@ -13,7 +20,8 @@ const stageSchema = new mongoose.Schema({
     type: String, 
     enum: ["Yet to Start", "In Progress", "Completed", "Delayed"],
     default: "Yet to Start"
-  }
+  },
+  milestones: { type: [milestoneSchema], default: [] }
 });
 
 const businessCaseFileSchema = new mongoose.Schema({
