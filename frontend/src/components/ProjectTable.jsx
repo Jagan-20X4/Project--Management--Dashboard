@@ -104,10 +104,10 @@ const ProjectTable = ({ projects, searchTerm, onEditStatus, onDelete }) => {
                     <td className="px-4 py-3 break-words">
                       <span className="text-sm text-gray-600 leading-tight">{project.department}</span>
                     </td>
-                    <td className="px-4 py-3 break-words">
+                    <td className="px-3 py-3 break-words">
                       <span className="text-sm text-gray-600">{project.startDate || "-"}</span>
                     </td>
-                    <td className="px-4 py-3 break-words">
+                    <td className="px-3 py-3 break-words">
                       <span className="text-sm text-gray-600">{project.endDate || "-"}</span>
                     </td>
                     <td className="px-3 py-3">
@@ -123,12 +123,12 @@ const ProjectTable = ({ projects, searchTerm, onEditStatus, onDelete }) => {
                         <span className="text-xs font-semibold text-gray-700 min-w-[30px] text-right">{progress}%</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-3">
                       <span className={`inline-flex px-3 py-0.5 text-xs font-semibold rounded-full ${getStatusColor(overallStatus)}`}>
                         {getStatusSummary(project)}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 py-3">
                       <div className="flex items-center gap-3">
                         <button
                           onClick={() => onEditStatus(project)}
@@ -148,7 +148,7 @@ const ProjectTable = ({ projects, searchTerm, onEditStatus, onDelete }) => {
                         >
                           <Trash2 className="w-5 h-5" />
                           <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                            Delete Project
+                            Delete 
                             <span className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></span>
                           </span>
                         </button>
