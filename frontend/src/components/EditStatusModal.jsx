@@ -903,6 +903,7 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
     ];
     
     // Build stage updates in the specified order - include ALL fields for each stage
+    // Ensure ALL 7 stages are included without truncation
     stageOrder.forEach((stageName) => {
       const stage = stages.find((s) => s.name === stageName);
       
@@ -918,18 +919,52 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
       body += `- ${stageName}: Planned Start: ${plannedStart}, Planned End: ${plannedEnd}, Actual Start: ${actualStart}, Actual End: ${actualEnd}, Status: ${status}, Remarks: ${remarks}\n`;
     });
 
-    // Use Outlook web deep link to avoid truncation issues
-    // Format: https://outlook.office.com/mail/deeplink/compose?to=...&subject=...&body=...
-    // Join emails with semicolons (Outlook web accepts semicolon-separated emails)
+    // Verify all stages are included in the body (defensive check)
+    const missingStages = stageOrder.filter(stageName => !body.includes(stageName));
+    if (missingStages.length > 0) {
+      console.error("Missing stages in email body:", missingStages);
+      console.error("Current body length:", body.length);
+      console.error("Body content:", body);
+      toast.error(`Error: Some stages are missing (${missingStages.join(", ")}). Please try again.`, {
+        position: "top-right",
+        autoClose: 4000,
+      });
+      return;
+    }
+    
+    // Log body for debugging (verify all stages are present)
+    console.log("Email body includes all stages. Body length:", body.length);
+    console.log("Stages found in body:", stageOrder.filter(stageName => body.includes(stageName)));
+
+    // Join emails with semicolons
     const toEmail = emailAddresses.join(";");
     
-    // Build Outlook web deep link URL
-    const outlookUrl = `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(toEmail)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    // Convert body newlines to URL-encoded format for mailto: protocol
+    // mailto: uses %0D%0A for line breaks (CRLF)
+    // First replace newlines, then encode the entire body
+    const bodyWithLineBreaks = body.replace(/\n/g, '\r\n');
+    const bodyEncoded = encodeURIComponent(bodyWithLineBreaks);
     
-    // Open Outlook web deep link (opens as draft, does not auto-send)
-    window.open(outlookUrl, '_blank');
+    // Build mailto: protocol URL to trigger Outlook desktop app
+    // Format: mailto:email1;email2?subject=...&body=...
+    // This will trigger Windows "Open Microsoft Outlook?" system dialog
+    const mailtoUrl = `mailto:${toEmail}?subject=${encodeURIComponent(subject)}&body=${bodyEncoded}`;
+    
+    // Check URL length - if too long, warn user but still try
+    if (mailtoUrl.length > 8000) {
+      console.warn("Email URL is very long (" + mailtoUrl.length + " chars). Some browsers may truncate.");
+      toast.warning("Email body is very long. All stages should be included, but if truncated, please check Outlook.", {
+        position: "top-right",
+        autoClose: 4000,
+      });
+    }
+    
+    // Use window.location.href to trigger the protocol handler
+    // This forces Windows to show the "Open Microsoft Outlook?" dialog
+    // After user confirms, Outlook desktop opens with the draft (does not auto-send)
+    window.location.href = mailtoUrl;
 
-    toast.info("Opening email draft in Outlook...", {
+    toast.info("Opening email draft in Outlook Desktop with all stages...", {
       position: "top-right",
       autoClose: 2000,
     });
