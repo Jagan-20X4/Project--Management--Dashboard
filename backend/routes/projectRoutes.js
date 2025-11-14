@@ -9,12 +9,11 @@ const router = express.Router();
 
 // Default stages template
 const defaultStages = [
-  { name: "Concept", stageOwner: "", weight: 5, status: "Yet to Start", startDate: "", endDate: "", actualStartDate: "", actualEndDate: "", remarks: "" },
+  { name: "Concept", stageOwner: "", weight: 10, status: "Yet to Start", startDate: "", endDate: "", actualStartDate: "", actualEndDate: "", remarks: "" },
   { name: "Business case approval", stageOwner: "", weight: 5, status: "Yet to Start", startDate: "", endDate: "", actualStartDate: "", actualEndDate: "", remarks: "" },
-  { name: "IT Infra and security", stageOwner: "", weight: 5, status: "Yet to Start", startDate: "", endDate: "", actualStartDate: "", actualEndDate: "", remarks: "" },
-  { name: "Vendor onboarding", stageOwner: "", weight: 55, status: "Yet to Start", startDate: "", endDate: "", actualStartDate: "", actualEndDate: "", remarks: "" },
-  { name: "Development", stageOwner: "", weight: 15, status: "Yet to Start", startDate: "", endDate: "", actualStartDate: "", actualEndDate: "", remarks: "" },
-  { name: "Execution & Delivery", stageOwner: "", weight: 5, status: "Yet to Start", startDate: "", endDate: "", actualStartDate: "", actualEndDate: "", remarks: "" },
+  { name: "IT Infra and security", stageOwner: "", weight: 15, status: "Yet to Start", startDate: "", endDate: "", actualStartDate: "", actualEndDate: "", remarks: "" },
+  { name: "Vendor onboarding", stageOwner: "", weight: 5, status: "Yet to Start", startDate: "", endDate: "", actualStartDate: "", actualEndDate: "", remarks: "" },
+  { name: "Execution & Delivery", stageOwner: "", weight: 55, status: "Yet to Start", startDate: "", endDate: "", actualStartDate: "", actualEndDate: "", remarks: "" },
   { name: "UAT", stageOwner: "", weight: 5, status: "Yet to Start", startDate: "", endDate: "", actualStartDate: "", actualEndDate: "", remarks: "" },
   { name: "Go-Live and support", stageOwner: "", weight: 5, status: "Yet to Start", startDate: "", endDate: "", actualStartDate: "", actualEndDate: "", remarks: "" }
 ];
