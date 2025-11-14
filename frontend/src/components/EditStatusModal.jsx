@@ -881,11 +881,11 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
     const currentDateForBody = currentDate;
     const overallRemarks = overallProjectSummary || "-";
     
-    // Build Project Details section
+    // Build Project Details section with clean formatting
     let body = `Project Details:\n`;
-    body += `Project Name: ${project.projectName} (ID: ${project.projectId}), `;
-    body += `Business Dept: ${project.department || "-"}, `;
-    body += `IT Owner: ${project.techDepartment || "-"}, `;
+    body += `Project Name: ${project.projectName} (ID: ${project.projectId}),\n`;
+    body += `Business Dept: ${project.department || "-"},\n`;
+    body += `IT Owner: ${project.techDepartment || "-"},\n`;
     body += `Overall Remarks for ${currentDateForBody}: ${overallRemarks}\n\n`;
     
     // Build Milestone Updates section
@@ -915,8 +915,9 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
       const status = stage ? mapStatusForEmail(stage.status) : "Pending";
       const remarks = (stage?.remarks && stage.remarks.trim() !== "") ? stage.remarks : "-";
       
-      // Format: - Stage Name: Planned Start: ..., Planned End: ..., Actual Start: ..., Actual End: ..., Status: ..., Remarks: ...
-      body += `- ${stageName}: Planned Start: ${plannedStart}, Planned End: ${plannedEnd}, Actual Start: ${actualStart}, Actual End: ${actualEnd}, Status: ${status}, Remarks: ${remarks}\n`;
+      // Format with clean line breaks: - Stage Name: followed by details on same line
+      body += `- ${stageName}:\n`;
+      body += `  Planned Start: ${plannedStart}, Planned End: ${plannedEnd}, Actual Start: ${actualStart}, Actual End: ${actualEnd}, Status: ${status}, Remarks: ${remarks}\n`;
     });
 
     // Verify all stages are included in the body (defensive check)
