@@ -262,13 +262,14 @@ const AddProjectPage = () => {
 
             <div>
               <label className="block text-sm font-semibold text-[#111827] mb-2">
-                Objectives
+                Objectives <span className="text-red-500">*</span>
               </label>
               <textarea
                 name="objectives"
                 value={formData.objectives}
                 onChange={handleChange}
                 rows={5}
+                required
                 className="input-modern resize-none"
                 placeholder="Enter project objectives and goals..."
               />
@@ -351,14 +352,13 @@ const AddProjectPage = () => {
 
                 <div>
                   <label className="block text-sm font-semibold text-[#111827] mb-2">
-                    Primary Contact of Project Owner <span className="text-red-500">*</span>
+                    Primary Contact of Project Owner
                   </label>
                   <input
                     type="text"
                     name="projectOwnerPrimaryContact"
                     value={formData.projectOwnerPrimaryContact}
                     onChange={handleChange}
-                    required
                     className="input-modern"
                     placeholder="Enter primary contact number"
                   />
@@ -416,14 +416,13 @@ const AddProjectPage = () => {
 
                 <div>
                   <label className="block text-sm font-semibold text-[#111827] mb-2">
-                    Primary Contact of Business Owner <span className="text-red-500">*</span>
+                    Primary Contact of Business Owner
                   </label>
                   <input
                     type="text"
                     name="businessOwnerPrimaryContact"
                     value={formData.businessOwnerPrimaryContact}
                     onChange={handleChange}
-                    required
                     className="input-modern"
                     placeholder="Enter primary contact number"
                   />
