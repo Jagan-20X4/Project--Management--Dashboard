@@ -87,6 +87,16 @@ const LandingPage = () => {
     const statuses = p.stages?.map((s) => s.status) || [];
     return statuses.includes("In Progress") && !statuses.every((s) => s === "Completed");
   }).length;
+  const delayedProjects = projects.filter((p) => {
+    if (!p.stages || p.stages.length === 0) return false;
+    return p.stages.some((stage) => {
+      const status = stage.status || "";
+      const remarks = (stage.remarks || "").toLowerCase();
+      // Count projects with "Delayed" status OR "In Progress" with delay-indicating remarks
+      return status === "Delayed" || 
+             (status === "In Progress" && (remarks.includes("delay") || remarks.includes("behind") || remarks.includes("late")));
+    });
+  }).length;
 
   return (
     <div className="min-h-screen">
@@ -98,7 +108,7 @@ const LandingPage = () => {
         </div>
 
         {/* Dashboard Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="card-modern p-6 border-l-4 border-[#2563eb] animate-fade-in">
             <div className="flex items-center justify-between">
               <div>
@@ -124,6 +134,15 @@ const LandingPage = () => {
                 <p className="text-3xl font-semibold text-[#111827]">{inProgressProjects}</p>
               </div>
               <div className="text-yellow-500 text-4xl opacity-80">🔄</div>
+            </div>
+          </div>
+          <div className="card-modern p-6 border-l-4 border-red-500 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">Delayed</p>
+                <p className="text-3xl font-semibold text-[#111827]">{delayedProjects}</p>
+              </div>
+              <div className="text-red-500 text-4xl opacity-80">⏰</div>
             </div>
           </div>
         </div>

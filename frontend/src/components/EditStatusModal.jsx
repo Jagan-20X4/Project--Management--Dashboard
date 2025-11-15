@@ -885,7 +885,9 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
     let body = `Project Details:\n`;
     body += `Project Name: ${project.projectName} (ID: ${project.projectId}),\n`;
     body += `Business Dept: ${project.department || "-"},\n`;
-    body += `IT Owner: ${project.techDepartment || "-"},\n`;
+    body += `Tech Department: ${project.techDepartment || "-"},\n`;
+    body += `Project Owner: ${project.projectOwner || "-"},\n`;
+    body += `Business Owner: ${project.businessOwner || "-"},\n`;
     body += `Overall Remarks for ${currentDateForBody}: ${overallRemarks}\n\n`;
     
     // Build Milestone Updates section
@@ -915,9 +917,14 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
       const status = stage ? mapStatusForEmail(stage.status) : "Pending";
       const remarks = (stage?.remarks && stage.remarks.trim() !== "") ? stage.remarks : "-";
       
-      // Format with clean line breaks: - Stage Name: followed by details on same line
+      // Format with each field on its own line with commas (except stage name line), and blank line after each milestone
       body += `- ${stageName}:\n`;
-      body += `  Planned Start: ${plannedStart}, Planned End: ${plannedEnd}, Actual Start: ${actualStart}, Actual End: ${actualEnd}, Status: ${status}, Remarks: ${remarks}\n`;
+      body += `Planned Start: ${plannedStart},\n`;
+      body += `Planned End: ${plannedEnd},\n`;
+      body += `Actual Start: ${actualStart},\n`;
+      body += `Actual End: ${actualEnd},\n`;
+      body += `Status: ${status},\n`;
+      body += `Remarks: ${remarks}\n\n`;
     });
 
     // Verify all stages are included in the body (defensive check)
@@ -1106,29 +1113,21 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                 <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-0">
                   <div className="text-sm sm:text-base font-semibold text-[#111827] sm:min-w-[140px] md:min-w-[160px] lg:min-w-[180px] space-y-1.5 sm:space-y-2">
                     <div>Project Owner:</div>
-                    <div className="text-xs sm:text-sm font-normal text-gray-600">Primary Email:</div>
                     <div className="text-xs sm:text-sm font-normal text-gray-600">Primary Contact:</div>
-                    <div className="text-xs sm:text-sm font-normal text-gray-600">Alternate Email:</div>
                   </div>
                   <div className="text-sm sm:text-base text-gray-700 flex-1 space-y-1.5 sm:space-y-2 break-words">
                     <div className="font-medium">{project.projectOwner || <span className="text-gray-400 italic">Not specified</span>}</div>
-                    <div className="text-xs sm:text-sm break-all">{project.projectOwnerPrimaryEmail || <span className="text-gray-400 italic">Not specified</span>}</div>
                     <div className="text-xs sm:text-sm">{project.projectOwnerPrimaryContact || <span className="text-gray-400 italic">Not specified</span>}</div>
-                    <div className="text-xs sm:text-sm break-all">{project.projectOwnerAlternateEmail || <span className="text-gray-400 italic">Not specified</span>}</div>
                   </div>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-0">
                   <div className="text-sm sm:text-base font-semibold text-[#111827] sm:min-w-[140px] md:min-w-[160px] lg:min-w-[180px] space-y-1.5 sm:space-y-2">
                     <div>Business Owner:</div>
-                    <div className="text-xs sm:text-sm font-normal text-gray-600">Primary Email:</div>
                     <div className="text-xs sm:text-sm font-normal text-gray-600">Primary Contact:</div>
-                    <div className="text-xs sm:text-sm font-normal text-gray-600">Alternate Email:</div>
                   </div>
                   <div className="text-sm sm:text-base text-gray-700 flex-1 space-y-1.5 sm:space-y-2 break-words">
                     <div className="font-medium">{project.businessOwner || <span className="text-gray-400 italic">Not specified</span>}</div>
-                    <div className="text-xs sm:text-sm break-all">{project.businessOwnerPrimaryEmail || <span className="text-gray-400 italic">Not specified</span>}</div>
                     <div className="text-xs sm:text-sm">{project.businessOwnerPrimaryContact || <span className="text-gray-400 italic">Not specified</span>}</div>
-                    <div className="text-xs sm:text-sm break-all">{project.businessOwnerAlternateEmail || <span className="text-gray-400 italic">Not specified</span>}</div>
                   </div>
                 </div>
               </div>
