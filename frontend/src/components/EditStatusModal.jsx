@@ -1065,27 +1065,25 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
             </div>
 
             {/* Project Details Section */}
-            <div className="card-modern p-5 sm:p-6 md:p-7 flex-shrink-0 bg-white">
-              <div className="space-y-5 sm:space-y-6">
-                {/* General Project Information */}
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-3 sm:gap-4 items-start">
-                    <span className="text-sm font-bold text-gray-800 sm:pt-1">Objectives:</span>
-                    <span className="text-sm text-gray-700 leading-relaxed break-words">
-                      {project.objectives || <span className="text-gray-400 italic">No objectives specified</span>}
-                    </span>
-                  </div>
-                  
-                  {project.businessCaseLink && (
-                    <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-3 sm:gap-4 items-center">
-                      <span className="text-sm font-bold text-gray-800">Business Case Link:</span>
+            <div className="card-modern p-3 sm:p-4 md:p-5 flex-shrink-0">
+              <div className="space-y-3 sm:space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-0">
+                  <span className="text-sm sm:text-base font-semibold text-[#111827] sm:min-w-[140px] md:min-w-[160px]">Objectives:</span>
+                  <span className="text-sm sm:text-base text-gray-700 flex-1 break-words">
+                    {project.objectives || <span className="text-gray-400 italic">No objectives specified</span>}
+                  </span>
+                </div>
+                {project.businessCaseLink && (
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-0">
+                    <span className="text-sm sm:text-base font-semibold text-[#111827] sm:min-w-[140px] md:min-w-[160px]">Business Case Link:</span>
+                    <span className="text-sm sm:text-base text-gray-700 flex-1 break-all">
                       <a 
                         href={project.businessCaseLink.startsWith('http://') || project.businessCaseLink.startsWith('https://') 
                           ? project.businessCaseLink 
                           : `https://${project.businessCaseLink}`} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-sm text-blue-600 hover:text-blue-700 hover:underline break-all transition-colors"
+                        className="text-[#2563eb] hover:underline break-all"
                         onClick={(e) => {
                           e.preventDefault();
                           const url = project.businessCaseLink.startsWith('http://') || project.businessCaseLink.startsWith('https://') 
@@ -1096,82 +1094,41 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                       >
                         {project.businessCaseLink}
                       </a>
-                    </div>
-                  )}
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-3 sm:gap-4 items-center">
-                    <span className="text-sm font-bold text-gray-800">Project Status:</span>
-                    <span className="text-sm text-gray-700">
-                      {project.projectStatus || <span className="text-gray-400 italic">Not specified</span>}
                     </span>
                   </div>
+                )}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-0">
+                  <span className="text-sm sm:text-base font-semibold text-[#111827] sm:min-w-[140px] md:min-w-[160px]">Project Status:</span>
+                  <span className="text-sm sm:text-base text-gray-700">
+                    {project.projectStatus || <span className="text-gray-400 italic">Not specified</span>}
+                  </span>
                 </div>
-
-                {/* Divider */}
-                <div className="border-t border-gray-200"></div>
-
-                {/* Project Owner Section */}
-                <div className="space-y-3">
-                  <h4 className="text-sm font-bold text-gray-900 mb-3">Project Owner</h4>
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-3 sm:gap-4">
-                      <span className="text-sm font-bold text-gray-800">Project Owner:</span>
-                      <span className="text-sm text-gray-800 font-medium">
-                        {project.projectOwner || <span className="text-gray-400 italic font-normal">Not specified</span>}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-3 sm:gap-4">
-                      <span className="text-sm font-bold text-gray-800">Primary Email:</span>
-                      <span className="text-sm text-gray-700 break-all">
-                        {project.projectOwnerPrimaryEmail || <span className="text-gray-400 italic">Not specified</span>}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-3 sm:gap-4">
-                      <span className="text-sm font-bold text-gray-800">Primary Contact:</span>
-                      <span className="text-sm text-gray-700">
-                        {project.projectOwnerPrimaryContact || <span className="text-gray-400 italic">Not specified</span>}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-3 sm:gap-4">
-                      <span className="text-sm font-bold text-gray-800">Alternate Email:</span>
-                      <span className="text-sm text-gray-700 break-all">
-                        {project.projectOwnerAlternateEmail || <span className="text-gray-400 italic">Not specified</span>}
-                      </span>
-                    </div>
+                <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-0">
+                  <div className="text-sm sm:text-base font-semibold text-[#111827] sm:min-w-[140px] md:min-w-[160px] lg:min-w-[180px] space-y-1.5 sm:space-y-2">
+                    <div>Project Owner:</div>
+                    <div className="text-xs sm:text-sm font-normal text-gray-600">Primary Email:</div>
+                    <div className="text-xs sm:text-sm font-normal text-gray-600">Primary Contact:</div>
+                    <div className="text-xs sm:text-sm font-normal text-gray-600">Alternate Email:</div>
+                  </div>
+                  <div className="text-sm sm:text-base text-gray-700 flex-1 space-y-1.5 sm:space-y-2 break-words">
+                    <div className="font-medium">{project.projectOwner || <span className="text-gray-400 italic">Not specified</span>}</div>
+                    <div className="text-xs sm:text-sm break-all">{project.projectOwnerPrimaryEmail || <span className="text-gray-400 italic">Not specified</span>}</div>
+                    <div className="text-xs sm:text-sm">{project.projectOwnerPrimaryContact || <span className="text-gray-400 italic">Not specified</span>}</div>
+                    <div className="text-xs sm:text-sm break-all">{project.projectOwnerAlternateEmail || <span className="text-gray-400 italic">Not specified</span>}</div>
                   </div>
                 </div>
-
-                {/* Divider */}
-                <div className="border-t border-gray-200"></div>
-
-                {/* Business Owner Section */}
-                <div className="space-y-3">
-                  <h4 className="text-sm font-bold text-gray-900 mb-3">Business Owner</h4>
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-3 sm:gap-4">
-                      <span className="text-sm font-bold text-gray-800">Business Owner:</span>
-                      <span className="text-sm text-gray-800 font-medium">
-                        {project.businessOwner || <span className="text-gray-400 italic font-normal">Not specified</span>}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-3 sm:gap-4">
-                      <span className="text-sm font-bold text-gray-800">Primary Email:</span>
-                      <span className="text-sm text-gray-700 break-all">
-                        {project.businessOwnerPrimaryEmail || <span className="text-gray-400 italic">Not specified</span>}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-3 sm:gap-4">
-                      <span className="text-sm font-bold text-gray-800">Primary Contact:</span>
-                      <span className="text-sm text-gray-700">
-                        {project.businessOwnerPrimaryContact || <span className="text-gray-400 italic">Not specified</span>}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-3 sm:gap-4">
-                      <span className="text-sm font-bold text-gray-800">Alternate Email:</span>
-                      <span className="text-sm text-gray-700 break-all">
-                        {project.businessOwnerAlternateEmail || <span className="text-gray-400 italic">Not specified</span>}
-                      </span>
-                    </div>
+                <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-0">
+                  <div className="text-sm sm:text-base font-semibold text-[#111827] sm:min-w-[140px] md:min-w-[160px] lg:min-w-[180px] space-y-1.5 sm:space-y-2">
+                    <div>Business Owner:</div>
+                    <div className="text-xs sm:text-sm font-normal text-gray-600">Primary Email:</div>
+                    <div className="text-xs sm:text-sm font-normal text-gray-600">Primary Contact:</div>
+                    <div className="text-xs sm:text-sm font-normal text-gray-600">Alternate Email:</div>
+                  </div>
+                  <div className="text-sm sm:text-base text-gray-700 flex-1 space-y-1.5 sm:space-y-2 break-words">
+                    <div className="font-medium">{project.businessOwner || <span className="text-gray-400 italic">Not specified</span>}</div>
+                    <div className="text-xs sm:text-sm break-all">{project.businessOwnerPrimaryEmail || <span className="text-gray-400 italic">Not specified</span>}</div>
+                    <div className="text-xs sm:text-sm">{project.businessOwnerPrimaryContact || <span className="text-gray-400 italic">Not specified</span>}</div>
+                    <div className="text-xs sm:text-sm break-all">{project.businessOwnerAlternateEmail || <span className="text-gray-400 italic">Not specified</span>}</div>
                   </div>
                 </div>
               </div>
