@@ -4,15 +4,37 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import LandingPage from "./pages/LandingPage";
 import AddProjectPage from "./pages/AddProjectPage";
+import LoginPage from "./pages/LoginPage";
+
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem("token");
+  return token ? children : <Navigate to="/login" replace />;
+};
 
 function App() {
   return (
     <Router>
       <div className="App">
         <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/add-project" element={<AddProjectPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <LandingPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/add-project"
+            element={
+              <ProtectedRoute>
+                <AddProjectPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
         <ToastContainer
           position="top-right"

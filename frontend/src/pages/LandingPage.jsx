@@ -4,6 +4,7 @@ import { getAllProjects, deleteProject } from "../api/projectAPI";
 import ProjectTable from "../components/ProjectTable";
 import EditStatusModal from "../components/EditStatusModal";
 import { toast } from "react-toastify";
+import { LogOut } from "lucide-react";
 
 const LandingPage = () => {
   const [projects, setProjects] = useState([]);
@@ -11,6 +12,8 @@ const LandingPage = () => {
   const [selectedProject, setSelectedProject] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filterType, setFilterType] = useState("all");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -77,39 +80,109 @@ const LandingPage = () => {
     }
   };
 
+  // Helper function to get overall project status
+  const getOverallStatus = (project) => {
+    const statuses = project.stages?.map((s) => s.status) || [];
+    if (statuses.includes("Delayed")) return "Delayed";
+    if (statuses.includes("In Progress")) return "In Progress";
+    if (statuses.every((s) => s === "Completed")) return "Completed";
+    return "Yet to Start";
+  };
+
+  // Filter projects based on filterType
+  const getFilteredProjects = () => {
+    let filtered = projects;
+
+    // Apply status filter
+    if (filterType === "completed") {
+      filtered = projects.filter((p) => getOverallStatus(p) === "Completed");
+    } else if (filterType === "inProgress") {
+      filtered = projects.filter((p) => getOverallStatus(p) === "In Progress");
+    } else if (filterType === "delayed") {
+      filtered = projects.filter((p) => getOverallStatus(p) === "Delayed");
+    }
+
+    // Apply search filter
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      filtered = filtered.filter((project) => {
+        return (
+          project.projectId.toLowerCase().includes(searchLower) ||
+          project.projectName.toLowerCase().includes(searchLower)
+        );
+      });
+    }
+
+    return filtered;
+  };
+
   // Calculate dashboard stats
   const totalProjects = projects.length;
-  const completedProjects = projects.filter((p) => {
-    const statuses = p.stages?.map((s) => s.status) || [];
-    return statuses.every((s) => s === "Completed");
-  }).length;
-  const inProgressProjects = projects.filter((p) => {
-    const statuses = p.stages?.map((s) => s.status) || [];
-    return statuses.includes("In Progress") && !statuses.every((s) => s === "Completed");
-  }).length;
-  const delayedProjects = projects.filter((p) => {
-    if (!p.stages || p.stages.length === 0) return false;
-    return p.stages.some((stage) => {
-      const status = stage.status || "";
-      const remarks = (stage.remarks || "").toLowerCase();
-      // Count projects with "Delayed" status OR "In Progress" with delay-indicating remarks
-      return status === "Delayed" || 
-             (status === "In Progress" && (remarks.includes("delay") || remarks.includes("behind") || remarks.includes("late")));
-    });
-  }).length;
+  const completedProjects = projects.filter((p) => getOverallStatus(p) === "Completed").length;
+  const inProgressProjects = projects.filter((p) => getOverallStatus(p) === "In Progress").length;
+  const delayedProjects = projects.filter((p) => getOverallStatus(p) === "Delayed").length;
+
+  // Pagination logic
+  const filteredProjects = getFilteredProjects();
+  const projectsPerPage = 10;
+  const indexOfLastProject = currentPage * projectsPerPage;
+  const indexOfFirstProject = indexOfLastProject - projectsPerPage;
+  const currentProjects = filteredProjects.slice(indexOfFirstProject, indexOfLastProject);
+  const totalPages = Math.ceil(filteredProjects.length / projectsPerPage);
+
+  // Reset to page 1 when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterType, searchTerm]);
+
+  // Handle filter change
+  const handleFilterChange = (filter) => {
+    setFilterType(filter);
+  };
+
+  // Handle page change
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    toast.success("Logged out successfully");
+    navigate("/login");
+  };
 
   return (
     <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-        {/* Header Section */}
-        <div className="mb-10 animate-fade-in">
-          <h1 className="text-4xl font-semibold mb-3 tracking-tight" style={{ color: '#FFFFFF' }}>Project Management Dashboard</h1>
-          <p className="text-lg font-medium" style={{ color: '#FFFFFF' }}>Manage and track all your projects in one place</p>
+        {/* Header Section with Logout Button */}
+        <div className="mb-10 animate-fade-in relative">
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-4xl font-semibold mb-3 tracking-tight" style={{ color: '#FFFFFF' }}>Project Management Dashboard</h1>
+              <p className="text-lg font-medium" style={{ color: '#FFFFFF' }}>Manage and track all your projects in one place</p>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-lg backdrop-blur-sm border border-white/20 hover:border-white/30"
+              title="Logout"
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="font-medium">Logout</span>
+            </button>
+          </div>
         </div>
 
         {/* Dashboard Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="card-modern p-6 border-l-4 border-[#2563eb] animate-fade-in">
+          <div 
+            className={`card-modern p-6 border-l-4 border-[#2563eb] animate-fade-in cursor-pointer transition-all duration-200 ${
+              filterType === "all" ? "ring-2 ring-[#2563eb] ring-opacity-50 shadow-lg" : "hover:shadow-md"
+            }`}
+            onClick={() => handleFilterChange("all")}
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 mb-1">Total Projects</p>
@@ -118,7 +191,13 @@ const LandingPage = () => {
               <div className="text-[#2563eb] text-4xl opacity-80">📊</div>
             </div>
           </div>
-          <div className="card-modern p-6 border-l-4 border-[#10b981] animate-fade-in" style={{ animationDelay: '0.1s' }}>
+          <div 
+            className={`card-modern p-6 border-l-4 border-[#10b981] animate-fade-in cursor-pointer transition-all duration-200 ${
+              filterType === "completed" ? "ring-2 ring-[#10b981] ring-opacity-50 shadow-lg" : "hover:shadow-md"
+            }`}
+            style={{ animationDelay: '0.1s' }}
+            onClick={() => handleFilterChange("completed")}
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 mb-1">Completed</p>
@@ -127,7 +206,13 @@ const LandingPage = () => {
               <div className="text-[#10b981] text-4xl opacity-80">✅</div>
             </div>
           </div>
-          <div className="card-modern p-6 border-l-4 border-yellow-500 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+          <div 
+            className={`card-modern p-6 border-l-4 border-yellow-500 animate-fade-in cursor-pointer transition-all duration-200 ${
+              filterType === "inProgress" ? "ring-2 ring-yellow-500 ring-opacity-50 shadow-lg" : "hover:shadow-md"
+            }`}
+            style={{ animationDelay: '0.2s' }}
+            onClick={() => handleFilterChange("inProgress")}
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 mb-1">In Progress</p>
@@ -136,7 +221,13 @@ const LandingPage = () => {
               <div className="text-yellow-500 text-4xl opacity-80">🔄</div>
             </div>
           </div>
-          <div className="card-modern p-6 border-l-4 border-red-500 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+          <div 
+            className={`card-modern p-6 border-l-4 border-red-500 animate-fade-in cursor-pointer transition-all duration-200 ${
+              filterType === "delayed" ? "ring-2 ring-red-500 ring-opacity-50 shadow-lg" : "hover:shadow-md"
+            }`}
+            style={{ animationDelay: '0.3s' }}
+            onClick={() => handleFilterChange("delayed")}
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 mb-1">Delayed</p>
@@ -179,11 +270,77 @@ const LandingPage = () => {
         ) : (
           <div className="animate-fade-in">
             <ProjectTable
-              projects={projects}
+              projects={currentProjects}
               searchTerm={searchTerm}
               onEditStatus={handleEditStatus}
               onDelete={handleDelete}
             />
+            {/* Pagination */}
+            {filteredProjects.length > 0 && (
+              <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="text-sm text-blue-600">
+                  Showing {indexOfFirstProject + 1} to {Math.min(indexOfLastProject, filteredProjects.length)} of {filteredProjects.length} projects
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                      currentPage === 1
+                        ? "bg-gray-100 text-grey-400 cursor-not-allowed"
+                        : "bg-white text-grey-700 hover:bg-grey-50 border border-gray-300 hover:border-gray-400"
+                    }`}
+                  >
+                    Prev
+                  </button>
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                      // Show first page, last page, current page, and pages around current
+                      if (
+                        page === 1 ||
+                        page === totalPages ||
+                        (page >= currentPage - 1 && page <= currentPage + 1)
+                      ) {
+                        return (
+                          <button
+                            key={page}
+                            onClick={() => handlePageChange(page)}
+                            className={`px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                              currentPage === page
+                                ? "bg-[#2563eb] text-white"
+                                : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-gray-400"
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        );
+                      } else if (
+                        page === currentPage - 2 ||
+                        page === currentPage + 2
+                      ) {
+                        return (
+                          <span key={page} className="px-2 text-gray-400">
+                            ...
+                          </span>
+                        );
+                      }
+                      return null;
+                    })}
+                  </div>
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                      currentPage === totalPages
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-gray-400"
+                    }`}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

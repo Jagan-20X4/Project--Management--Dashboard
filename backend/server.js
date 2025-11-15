@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import projectRoutes from "./routes/projectRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 import path from "path";
 import fs from "fs";
 
@@ -34,6 +35,7 @@ app.use("/uploads", express.static("uploads"));
 
 // Routes
 app.use("/api/projects", projectRoutes);
+app.use("/api/auth", authRoutes);
 
 // Health check
 app.get("/", (req, res) => {

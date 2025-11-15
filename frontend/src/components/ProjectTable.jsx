@@ -6,15 +6,6 @@ import { Edit, Trash2 } from "lucide-react";
 const ProjectTable = ({ projects, searchTerm, onEditStatus, onDelete }) => {
   const navigate = useNavigate();
 
-  // Filter projects based on search term
-  const filteredProjects = projects.filter((project) => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      project.projectId.toLowerCase().includes(searchLower) ||
-      project.projectName.toLowerCase().includes(searchLower)
-    );
-  });
-
   // Calculate progress percentage
   const calculateProgress = (project) => {
     if (!project.stages || project.stages.length === 0) return 0;
@@ -72,17 +63,17 @@ const ProjectTable = ({ projects, searchTerm, onEditStatus, onDelete }) => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-100">
-            {filteredProjects.length === 0 ? (
+            {projects.length === 0 ? (
               <tr>
                     <td colSpan="8" className="px-6 py-12 text-center">
                   <div className="flex flex-col items-center justify-center">
                     <p className="text-gray-400 text-sm mb-2">No projects found</p>
-                    <p className="text-gray-300 text-xs">Try adjusting your search terms</p>
+                    <p className="text-gray-300 text-xs">Try adjusting your search terms or filters</p>
                   </div>
                 </td>
               </tr>
             ) : (
-              filteredProjects.map((project, index) => {
+              projects.map((project, index) => {
                 const progress = calculateProgress(project);
                 const overallStatus = getOverallStatus(project);
                 return (
