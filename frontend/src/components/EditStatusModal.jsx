@@ -1043,7 +1043,9 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
     let body = `Project Details:\n`;
     body += `Project Name: ${project.projectName} (ID: ${project.projectId}),\n`;
     body += `Business Dept: ${project.department || "-"},\n`;
-    body += `IT Owner: ${project.techDepartment || "-"},\n`;
+    body += `Tech Department: ${project.techDepartment || "-"},\n`;
+    body += `Project Owner: ${project.projectOwner || "-"},\n`;
+    body += `Business Owner: ${project.businessOwner || "-"},\n`;
     body += `Overall Remarks for ${currentDateForBody}: ${overallRemarks}\n\n`;
 
     // Build Milestone Updates section
@@ -1074,9 +1076,14 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
       const remarks =
         stage?.remarks && stage.remarks.trim() !== "" ? stage.remarks : "-";
 
-      // Format with clean line breaks: - Stage Name: followed by details on same line
+      // Format with each field on its own line
       body += `- ${stageName}:\n`;
-      body += `  Planned Start: ${plannedStart}, Planned End: ${plannedEnd}, Actual Start: ${actualStart}, Actual End: ${actualEnd}, Status: ${status}, Remarks: ${remarks}\n`;
+      body += `Planned Start: ${plannedStart},\n`;
+      body += `Planned End: ${plannedEnd},\n`;
+      body += `Actual Start: ${actualStart},\n`;
+      body += `Actual End: ${actualEnd},\n`;
+      body += `Status: ${status},\n`;
+      body += `Remarks: ${remarks}\n\n`;
     });
 
     // Verify all stages are included in the body (defensive check)
