@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createProject, uploadBusinessCase } from "../api/projectAPI";
 import { toast } from "react-toastify";
-import { LogOut } from "lucide-react";
 
 const AddProjectPage = () => {
   const navigate = useNavigate();
@@ -150,32 +149,15 @@ const AddProjectPage = () => {
     }
   };
 
-  // Handle logout
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    toast.success("Logged out successfully");
-    navigate("/login");
-  };
 
   return (
     <div className="min-h-screen py-8 lg:py-12">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="card-modern p-8 lg:p-10 animate-fade-in">
           <div className="mb-8">
-            <div className="flex items-start justify-between">
-              <div>
-                <h1 className="text-3xl font-semibold text-[#111827] mb-2 tracking-tight">Add New Project</h1>
-                <p className="text-gray-600 font-medium">Fill in the details to create a new project</p>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
-                title="Logout"
-              >
-                <LogOut className="w-5 h-5" />
-                <span className="font-medium">Logout</span>
-              </button>
+            <div>
+              <h1 className="text-3xl font-semibold text-[#111827] mb-2 tracking-tight">Add New Project</h1>
+              <p className="text-gray-600 font-medium">Fill in the details to create a new project</p>
             </div>
           </div>
 

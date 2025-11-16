@@ -12,6 +12,30 @@ const ProtectedRoute = ({ children }) => {
   return token ? children : <Navigate to="/login" replace />;
 };
 
+// Admin Only Route Component
+const AdminRoute = ({ children }) => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  // Check user role
+  try {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      if (user.role === "admin") {
+        return children;
+      }
+    }
+  } catch (error) {
+    console.error("Error parsing user data:", error);
+  }
+  
+  // If not admin, redirect to landing page
+  return <Navigate to="/" replace />;
+};
+
 function App() {
   return (
     <Router>
@@ -29,9 +53,9 @@ function App() {
           <Route
             path="/add-project"
             element={
-              <ProtectedRoute>
+              <AdminRoute>
                 <AddProjectPage />
-              </ProtectedRoute>
+              </AdminRoute>
             }
           />
           <Route path="*" element={<Navigate to="/login" replace />} />

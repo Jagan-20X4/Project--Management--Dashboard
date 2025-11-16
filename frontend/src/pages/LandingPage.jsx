@@ -16,6 +16,24 @@ const LandingPage = () => {
   const [filterType, setFilterType] = useState("all");
   const navigate = useNavigate();
 
+  // Get user role from localStorage
+  const getUserRole = () => {
+    try {
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        return user.role || "admin"; // default to admin if role not found
+      }
+    } catch (error) {
+      console.error("Error parsing user data:", error);
+    }
+    return "admin"; // default to admin
+  };
+
+  const userRole = getUserRole();
+  const isAdmin = userRole === "admin";
+  const isHod = userRole === "hod";
+
   useEffect(() => {
     fetchProjects();
   }, []);
@@ -250,12 +268,14 @@ const LandingPage = () => {
                 className="input-modern"
               />
             </div>
-            <button
-              onClick={() => navigate("/add-project")}
-              className="btn-primary w-full md:w-auto"
-            >
-              <span className="mr-2">➕</span> Add New Project
-            </button>
+            {isAdmin && (
+              <button
+                onClick={() => navigate("/add-project")}
+                className="btn-primary w-full md:w-auto"
+              >
+                <span className="mr-2">➕</span> Add New Project
+              </button>
+            )}
           </div>
         </div>
 
@@ -274,6 +294,7 @@ const LandingPage = () => {
               searchTerm={searchTerm}
               onEditStatus={handleEditStatus}
               onDelete={handleDelete}
+              userRole={userRole}
             />
             {/* Pagination */}
             {filteredProjects.length > 0 && (
@@ -350,6 +371,7 @@ const LandingPage = () => {
           isOpen={isModalOpen}
           onClose={handleModalClose}
           onUpdate={handleUpdate}
+          userRole={userRole}
         />
       </div>
     </div>

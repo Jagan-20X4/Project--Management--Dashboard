@@ -12,7 +12,10 @@ import {
   validateDateRange,
 } from "../utils/dateCalculator";
 
-const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
+const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin" }) => {
+  const isAdmin = userRole === "admin";
+  const isHod = userRole === "hod";
+  const isReadOnly = isHod; // HOD users have read-only access
   const [stages, setStages] = useState([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -1203,6 +1206,7 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                     onChange={(e) => {
                       setStartDate(e.target.value);
                     }}
+                    disabled={isReadOnly}
                     animate={
                       highlightedFields.has("project-startDate")
                         ? {
@@ -1215,7 +1219,7 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                       highlightedFields.has("project-startDate")
                         ? "bg-yellow-100"
                         : ""
-                    }`}
+                    } ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                   />
                   <div className="mt-2 sm:mt-3">
                     <label className="block text-xs sm:text-sm font-semibold text-[#111827] mb-1.5 sm:mb-2">
@@ -1226,7 +1230,8 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                       onChange={(e) => {
                         setPriority(e.target.value);
                       }}
-                      className="input-modern text-sm sm:text-base"
+                      disabled={isReadOnly}
+                      className={`input-modern text-sm sm:text-base ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                     >
                       <option value="P1">P1</option>
                       <option value="P2">P2</option>
@@ -1244,6 +1249,7 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                     onChange={(e) => {
                       setEndDate(e.target.value);
                     }}
+                    disabled={isReadOnly}
                     animate={
                       highlightedFields.has("project-endDate")
                         ? {
@@ -1256,17 +1262,18 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                       highlightedFields.has("project-endDate")
                         ? "bg-yellow-100"
                         : ""
-                    }`}
+                    } ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                   />
                 </div>
               </div>
               <div className="flex justify-end">
-                <button
-                  type="button"
-                  onClick={handleAutoCalculateDates}
-                  className="btn-success text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2"
-                  title="Auto-calculate stage dates based on project dates and stage weights"
-                >
+                {!isReadOnly && (
+                  <button
+                    type="button"
+                    onClick={handleAutoCalculateDates}
+                    className="btn-success text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2"
+                    title="Auto-calculate stage dates based on project dates and stage weights"
+                  >
                   <svg
                     className="w-3 h-3 sm:w-4 sm:h-4"
                     fill="none"
@@ -1284,7 +1291,8 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                     Auto-Calculate Stage Dates
                   </span>
                   <span className="sm:hidden ml-1">Auto-Calculate</span>
-                </button>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -1560,6 +1568,7 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                                       e.target.value
                                     )
                                   }
+                                  disabled={isReadOnly}
                                   placeholder="Owner..."
                                   animate={
                                     isStageOwnerHighlighted
@@ -1576,7 +1585,7 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                                     isStageOwnerHighlighted
                                       ? "bg-yellow-100"
                                       : ""
-                                  }`}
+                                  } ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                                   style={{
                                     minWidth: "100px",
                                     minHeight: "28px",
@@ -1632,8 +1641,9 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                                         );
                                       }
                                     }}
+                                    disabled={isReadOnly}
                                     placeholder="0"
-                                    className="w-full px-1.5 sm:px-2 py-1 sm:py-1.5 pr-4 sm:pr-5 text-[10px] sm:text-xs border border-gray-200 rounded-lg sm:rounded-xl bg-white text-[#111827] placeholder-gray-400 font-medium focus:outline-none focus:ring-1 focus:ring-[#2563eb] focus:border-transparent transition-all duration-200 text-center"
+                                    className={`w-full px-1.5 sm:px-2 py-1 sm:py-1.5 pr-4 sm:pr-5 text-[10px] sm:text-xs border border-gray-200 rounded-lg sm:rounded-xl bg-white text-[#111827] placeholder-gray-400 font-medium focus:outline-none focus:ring-1 focus:ring-[#2563eb] focus:border-transparent transition-all duration-200 text-center ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                                     style={{ minWidth: "40px" }}
                                   />
                                   <span className="absolute right-1.5 sm:right-2 top-1/2 transform -translate-y-1/2 text-[10px] sm:text-xs text-gray-500 pointer-events-none">
@@ -1664,11 +1674,12 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                                         e.target.value
                                       )
                                     }
+                                    disabled={isReadOnly}
                                     className={`input-modern text-[10px] sm:text-xs font-medium whitespace-nowrap px-2 sm:px-2.5 py-1 sm:py-1.5 ${getStatusColor(
                                       stage.status
                                     )} ${
                                       isStatusHighlighted ? "bg-yellow-100" : ""
-                                    }`}
+                                    } ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                                     style={{ minWidth: "95px" }}
                                   >
                                     <option value="Yet to Start">
@@ -1743,6 +1754,7 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                                       e.target.value
                                     )
                                   }
+                                  disabled={isReadOnly}
                                   animate={
                                     isActualStartHighlighted
                                       ? {
@@ -1758,7 +1770,7 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                                     isActualStartHighlighted
                                       ? "bg-yellow-100"
                                       : ""
-                                  }`}
+                                  } ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                                   style={{ minWidth: "95px" }}
                                 />
                               </td>
@@ -1773,6 +1785,7 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                                       e.target.value
                                     )
                                   }
+                                  disabled={isReadOnly}
                                   animate={
                                     isActualEndHighlighted
                                       ? {
@@ -1788,7 +1801,7 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                                     isActualEndHighlighted
                                       ? "bg-yellow-100"
                                       : ""
-                                  }`}
+                                  } ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                                   style={{ minWidth: "95px" }}
                                 />
                               </td>
@@ -1803,6 +1816,7 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                                       e.target.value
                                     )
                                   }
+                                  disabled={isReadOnly}
                                   placeholder="Remarks..."
                                   animate={
                                     isRemarksHighlighted
@@ -1817,7 +1831,7 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                                   transition={{ duration: 2 }}
                                   className={`input-modern text-[10px] sm:text-xs px-1.5 sm:px-2 py-1 sm:py-1.5 ${
                                     isRemarksHighlighted ? "bg-yellow-100" : ""
-                                  }`}
+                                  } ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                                 />
                               </td>
                             </motion.tr>,
@@ -2061,6 +2075,7 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                   onChange={(e) => {
                     setOverallProjectSummary(e.target.value);
                   }}
+                  disabled={isReadOnly}
                   placeholder="Enter overall project summary here..."
                   animate={
                     highlightedFields.has("project-overallProjectSummary")
@@ -2074,7 +2089,7 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
                     highlightedFields.has("project-overallProjectSummary")
                       ? "bg-yellow-100"
                       : ""
-                  }`}
+                  } ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                   rows={5}
                 />
               </div>
@@ -2177,20 +2192,22 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate }) => {
             >
               Send Mail
             </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 order-1 sm:order-2"
-            >
-              {loading ? (
-                <>
-                  <span className="inline-block animate-spin rounded-full h-2.5 w-2.5 sm:h-3 sm:w-3 border-b-2 border-white mr-1.5"></span>
-                  Saving...
-                </>
-              ) : (
-                "Save Changes"
-              )}
-            </button>
+            {!isReadOnly && (
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-primary text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 order-1 sm:order-2"
+              >
+                {loading ? (
+                  <>
+                    <span className="inline-block animate-spin rounded-full h-2.5 w-2.5 sm:h-3 sm:w-3 border-b-2 border-white mr-1.5"></span>
+                    Saving...
+                  </>
+                ) : (
+                  "Save Changes"
+                )}
+              </button>
+            )}
           </div>
         </form>
       </div>

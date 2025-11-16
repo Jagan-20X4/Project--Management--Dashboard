@@ -40,9 +40,17 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ error: "Invalid username or password" });
     }
 
+    // Determine user role based on username
+    let role = "admin"; // default role
+    if (user.username === "test_hod") {
+      role = "hod"; // Head of Department - view only
+    } else if (user.username === "test_admin") {
+      role = "admin"; // Admin - full access
+    }
+
     // Generate JWT token
     const token = jwt.sign(
-      { userId: user._id, username: user.username },
+      { userId: user._id, username: user.username, role: role },
       process.env.JWT_SECRET || "your-secret-key-change-in-production",
       { expiresIn: "7d" }
     );
@@ -53,6 +61,7 @@ router.post("/login", async (req, res) => {
       user: {
         id: user._id,
         username: user.username,
+        role: role,
       },
     });
   } catch (error) {

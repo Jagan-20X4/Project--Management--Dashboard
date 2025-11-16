@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Edit, Trash2 } from "lucide-react";
 
-const ProjectTable = ({ projects, searchTerm, onEditStatus, onDelete }) => {
+const ProjectTable = ({ projects, searchTerm, onEditStatus, onDelete, userRole = "admin" }) => {
   const navigate = useNavigate();
+  const isAdmin = userRole === "admin";
+  const isHod = userRole === "hod";
 
   // Calculate progress percentage
   const calculateProgress = (project) => {
@@ -121,28 +123,45 @@ const ProjectTable = ({ projects, searchTerm, onEditStatus, onDelete }) => {
                     </td>
                     <td className="px-3 py-3">
                       <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => onEditStatus(project)}
-                          className="relative group p-2 rounded-lg text-[#2563eb] hover:bg-blue-50 hover:text-[#1d4ed8] transition-all duration-200"
-                          aria-label="Edit Status"
-                        >
-                          <Edit className="w-5 h-5" />
-                          <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                            Edit Status
-                            <span className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></span>
-                          </span>
-                        </button>
-                        <button
-                          onClick={() => onDelete(project)}
-                          className="relative group p-2 rounded-lg text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200"
-                          aria-label="Delete Project"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                          <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                            Delete 
-                            <span className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></span>
-                          </span>
-                        </button>
+                        {isAdmin ? (
+                          <>
+                            <button
+                              onClick={() => onEditStatus(project)}
+                              className="relative group p-2 rounded-lg text-[#2563eb] hover:bg-blue-50 hover:text-[#1d4ed8] transition-all duration-200"
+                              aria-label="Edit Status"
+                            >
+                              <Edit className="w-5 h-5" />
+                              <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                                Edit Status
+                                <span className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></span>
+                              </span>
+                            </button>
+                            <button
+                              onClick={() => onDelete(project)}
+                              className="relative group p-2 rounded-lg text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200"
+                              aria-label="Delete Project"
+                            >
+                              <Trash2 className="w-5 h-5" />
+                              <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                                Delete 
+                                <span className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></span>
+                              </span>
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={() => onEditStatus(project)}
+                            className="relative group p-2 rounded-lg text-[#2563eb] hover:bg-blue-50 hover:text-[#1d4ed8] transition-all duration-200"
+                            aria-label="View Details"
+                            title="View project details (read-only)"
+                          >
+                            <Edit className="w-5 h-5" />
+                            <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                              View Details
+                              <span className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></span>
+                            </span>
+                          </button>
+                        )}
                       </div>
                     </td>
                   </motion.tr>
