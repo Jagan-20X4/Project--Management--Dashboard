@@ -17,13 +17,17 @@ export const createProject = async (projectData) => {
   return response.data;
 };
 
-export const updateProjectStages = async (id, stages, startDate, endDate, logs = [], overallProjectSummary = undefined, priority = undefined) => {
+export const updateProjectStages = async (id, stages, startDate, endDate, logs = [], overallProjectSummary = undefined, priority = undefined, projectOwnerPrimaryEmail = undefined, projectOwnerAlternateEmail = undefined, businessOwnerPrimaryEmail = undefined, businessOwnerAlternateEmail = undefined) => {
   const response = await axios.patch(`${API_URL}/${id}/stages`, {
     stages,
     startDate,
     endDate,
     overallProjectSummary,
     priority,
+    projectOwnerPrimaryEmail,
+    projectOwnerAlternateEmail,
+    businessOwnerPrimaryEmail,
+    businessOwnerAlternateEmail,
     logs
   });
   return response.data;
@@ -77,6 +81,15 @@ export const uploadBusinessCase = async (projectId, files, onUploadProgress) => 
 
 export const getBusinessCase = async (projectId) => {
   const response = await axios.get(`${API_URL}/${projectId}/business-case`);
+  return response.data;
+};
+
+export const updateProjectPriority = async (id, priority, stages) => {
+  const response = await axios.patch(`${API_URL}/${id}/stages`, {
+    stages: stages || [],
+    priority,
+    logs: []
+  });
   return response.data;
 };
 

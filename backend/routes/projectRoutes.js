@@ -352,6 +352,20 @@ router.patch("/:id/stages", async (req, res) => {
       project.priority = req.body.priority;
     }
     
+    // Update email fields if provided
+    if (req.body.projectOwnerPrimaryEmail !== undefined) {
+      project.projectOwnerPrimaryEmail = req.body.projectOwnerPrimaryEmail;
+    }
+    if (req.body.projectOwnerAlternateEmail !== undefined) {
+      project.projectOwnerAlternateEmail = req.body.projectOwnerAlternateEmail;
+    }
+    if (req.body.businessOwnerPrimaryEmail !== undefined) {
+      project.businessOwnerPrimaryEmail = req.body.businessOwnerPrimaryEmail;
+    }
+    if (req.body.businessOwnerAlternateEmail !== undefined) {
+      project.businessOwnerAlternateEmail = req.body.businessOwnerAlternateEmail;
+    }
+    
     await project.save();
     
     // Save logs to database permanently

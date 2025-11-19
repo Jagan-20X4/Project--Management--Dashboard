@@ -19,17 +19,23 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
   const [stages, setStages] = useState([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [priority, setPriority] = useState("P3");
   const [overallProjectSummary, setOverallProjectSummary] = useState("");
+  const [projectOwnerPrimaryEmail, setProjectOwnerPrimaryEmail] = useState("");
+  const [projectOwnerAlternateEmail, setProjectOwnerAlternateEmail] = useState("");
+  const [businessOwnerPrimaryEmail, setBusinessOwnerPrimaryEmail] = useState("");
+  const [businessOwnerAlternateEmail, setBusinessOwnerAlternateEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [logs, setLogs] = useState([]);
   const [pendingChanges, setPendingChanges] = useState([]);
   const [initialStages, setInitialStages] = useState([]);
   const [initialStartDate, setInitialStartDate] = useState("");
   const [initialEndDate, setInitialEndDate] = useState("");
-  const [initialPriority, setInitialPriority] = useState("P3");
   const [initialOverallProjectSummary, setInitialOverallProjectSummary] =
     useState("");
+  const [initialProjectOwnerPrimaryEmail, setInitialProjectOwnerPrimaryEmail] = useState("");
+  const [initialProjectOwnerAlternateEmail, setInitialProjectOwnerAlternateEmail] = useState("");
+  const [initialBusinessOwnerPrimaryEmail, setInitialBusinessOwnerPrimaryEmail] = useState("");
+  const [initialBusinessOwnerAlternateEmail, setInitialBusinessOwnerAlternateEmail] = useState("");
   const [highlightedFields, setHighlightedFields] = useState(new Set());
   const [recalculatedDateFields, setRecalculatedDateFields] = useState(
     new Set()
@@ -115,13 +121,19 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
       const projectStages = project.stages || [];
       const projectStartDate = project.startDate || "";
       const projectEndDate = project.endDate || "";
-      const projectPriority = project.priority || "P3";
       const projectSummary = project.overallProjectSummary || "";
+      const projectOwnerEmail = project.projectOwnerPrimaryEmail || "";
+      const projectOwnerAltEmail = project.projectOwnerAlternateEmail || "";
+      const businessOwnerEmail = project.businessOwnerPrimaryEmail || "";
+      const businessOwnerAltEmail = project.businessOwnerAlternateEmail || "";
 
       setStartDate(projectStartDate);
       setEndDate(projectEndDate);
-      setPriority(projectPriority);
       setOverallProjectSummary(projectSummary);
+      setProjectOwnerPrimaryEmail(projectOwnerEmail);
+      setProjectOwnerAlternateEmail(projectOwnerAltEmail);
+      setBusinessOwnerPrimaryEmail(businessOwnerEmail);
+      setBusinessOwnerAlternateEmail(businessOwnerAltEmail);
 
       // Initialize milestones for Development stage
       const developmentIndex = projectStages.findIndex(
@@ -199,8 +211,11 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
       setInitialStages(JSON.parse(JSON.stringify(projectStages)));
       setInitialStartDate(projectStartDate);
       setInitialEndDate(projectEndDate);
-      setInitialPriority(projectPriority);
       setInitialOverallProjectSummary(projectSummary);
+      setInitialProjectOwnerPrimaryEmail(projectOwnerEmail);
+      setInitialProjectOwnerAlternateEmail(projectOwnerAltEmail);
+      setInitialBusinessOwnerPrimaryEmail(businessOwnerEmail);
+      setInitialBusinessOwnerAlternateEmail(businessOwnerAltEmail);
 
       // Clear pending changes when opening a new project
       setPendingChanges([]);
@@ -678,6 +693,63 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
       }
     }
 
+    // Check for changes to email fields
+    if (initialProjectOwnerPrimaryEmail !== projectOwnerPrimaryEmail) {
+      const key = `Project Owner Primary Email-N/A-${initialProjectOwnerPrimaryEmail}-${projectOwnerPrimaryEmail}`;
+      if (!changeKeys.has(key)) {
+        changeKeys.add(key);
+        allChanges.push({
+          id: Date.now() + Math.random(),
+          fieldName: "Project Owner Primary Email",
+          previousValue: initialProjectOwnerPrimaryEmail || "(empty)",
+          newValue: projectOwnerPrimaryEmail || "(empty)",
+          stageName: "N/A",
+        });
+      }
+    }
+
+    if (initialProjectOwnerAlternateEmail !== projectOwnerAlternateEmail) {
+      const key = `Project Owner Alternate Email-N/A-${initialProjectOwnerAlternateEmail}-${projectOwnerAlternateEmail}`;
+      if (!changeKeys.has(key)) {
+        changeKeys.add(key);
+        allChanges.push({
+          id: Date.now() + Math.random(),
+          fieldName: "Project Owner Alternate Email",
+          previousValue: initialProjectOwnerAlternateEmail || "(empty)",
+          newValue: projectOwnerAlternateEmail || "(empty)",
+          stageName: "N/A",
+        });
+      }
+    }
+
+    if (initialBusinessOwnerPrimaryEmail !== businessOwnerPrimaryEmail) {
+      const key = `Business Owner Primary Email-N/A-${initialBusinessOwnerPrimaryEmail}-${businessOwnerPrimaryEmail}`;
+      if (!changeKeys.has(key)) {
+        changeKeys.add(key);
+        allChanges.push({
+          id: Date.now() + Math.random(),
+          fieldName: "Business Owner Primary Email",
+          previousValue: initialBusinessOwnerPrimaryEmail || "(empty)",
+          newValue: businessOwnerPrimaryEmail || "(empty)",
+          stageName: "N/A",
+        });
+      }
+    }
+
+    if (initialBusinessOwnerAlternateEmail !== businessOwnerAlternateEmail) {
+      const key = `Business Owner Alternate Email-N/A-${initialBusinessOwnerAlternateEmail}-${businessOwnerAlternateEmail}`;
+      if (!changeKeys.has(key)) {
+        changeKeys.add(key);
+        allChanges.push({
+          id: Date.now() + Math.random(),
+          fieldName: "Business Owner Alternate Email",
+          previousValue: initialBusinessOwnerAlternateEmail || "(empty)",
+          newValue: businessOwnerAlternateEmail || "(empty)",
+          stageName: "N/A",
+        });
+      }
+    }
+
     // Check for changes in stages that might not be in pendingChanges
     stages.forEach((stage, index) => {
       const initialStage = initialStages[index];
@@ -800,7 +872,11 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
           endDate,
           [],
           overallProjectSummary,
-          priority
+          undefined,
+          projectOwnerPrimaryEmail,
+          projectOwnerAlternateEmail,
+          businessOwnerPrimaryEmail,
+          businessOwnerAlternateEmail
         );
         onUpdate();
         setLoading(false);
@@ -853,7 +929,11 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
         endDate,
         logsToSave,
         overallProjectSummary,
-        priority
+        undefined,
+        projectOwnerPrimaryEmail,
+        projectOwnerAlternateEmail,
+        businessOwnerPrimaryEmail,
+        businessOwnerAlternateEmail
       );
       console.log("Project and logs saved successfully");
 
@@ -868,8 +948,11 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
       setInitialStages(JSON.parse(JSON.stringify(stages)));
       setInitialStartDate(startDate);
       setInitialEndDate(endDate);
-      setInitialPriority(priority);
       setInitialOverallProjectSummary(overallProjectSummary);
+      setInitialProjectOwnerPrimaryEmail(projectOwnerPrimaryEmail);
+      setInitialProjectOwnerAlternateEmail(projectOwnerAlternateEmail);
+      setInitialBusinessOwnerPrimaryEmail(businessOwnerPrimaryEmail);
+      setInitialBusinessOwnerAlternateEmail(businessOwnerAlternateEmail);
 
       // Update milestone counters based on current milestones
       stages.forEach((stage, stageIndex) => {
@@ -1002,18 +1085,19 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
     if (!project) return;
 
     // Collect email addresses (project owner + business owner primary + alternate emails)
+    // Use state values (updated emails) instead of project values
     const emailAddresses = [];
-    if (project.projectOwnerPrimaryEmail) {
-      emailAddresses.push(project.projectOwnerPrimaryEmail);
+    if (projectOwnerPrimaryEmail) {
+      emailAddresses.push(projectOwnerPrimaryEmail);
     }
-    if (project.projectOwnerAlternateEmail) {
-      emailAddresses.push(project.projectOwnerAlternateEmail);
+    if (projectOwnerAlternateEmail) {
+      emailAddresses.push(projectOwnerAlternateEmail);
     }
-    if (project.businessOwnerPrimaryEmail) {
-      emailAddresses.push(project.businessOwnerPrimaryEmail);
+    if (businessOwnerPrimaryEmail) {
+      emailAddresses.push(businessOwnerPrimaryEmail);
     }
-    if (project.businessOwnerAlternateEmail) {
-      emailAddresses.push(project.businessOwnerAlternateEmail);
+    if (businessOwnerAlternateEmail) {
+      emailAddresses.push(businessOwnerAlternateEmail);
     }
 
     // If no emails found, show warning
@@ -1221,23 +1305,6 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
                         : ""
                     } ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                   />
-                  <div className="mt-2 sm:mt-3">
-                    <label className="block text-xs sm:text-sm font-semibold text-[#111827] mb-1.5 sm:mb-2">
-                      Priority
-                    </label>
-                    <select
-                      value={priority}
-                      onChange={(e) => {
-                        setPriority(e.target.value);
-                      }}
-                      disabled={isReadOnly}
-                      className={`input-modern text-sm sm:text-base ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
-                    >
-                      <option value="P1">P1</option>
-                      <option value="P2">P2</option>
-                      <option value="P3">P3</option>
-                    </select>
-                  </div>
                 </div>
                 <div>
                   <label className="block text-xs sm:text-sm font-semibold text-[#111827] mb-1.5 sm:mb-2">
@@ -1377,7 +1444,22 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
                     )}
                   </span>
 
-                  {/* Row 2 */}
+                  {/* Row 2 - Email */}
+                  <span className="text-xs sm:text-sm font-semibold text-gray-600 pl-4 sm:pl-0">
+                    Project Owner Email:
+                  </span>
+                  <input
+                    type="email"
+                    value={projectOwnerPrimaryEmail}
+                    onChange={(e) => setProjectOwnerPrimaryEmail(e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="Enter email"
+                    className={`text-xs sm:text-sm px-2 py-1 border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#2563eb] focus:border-transparent transition-all duration-200 ${
+                      isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""
+                    }`}
+                  />
+
+                  {/* Row 3 - Primary Contact */}
                   <span className="text-xs sm:text-sm font-semibold text-gray-600 pl-4 sm:pl-0">
                     Primary Contact:
                   </span>
@@ -1388,6 +1470,21 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
                       </span>
                     )}
                   </span>
+
+                  {/* Row 4 - Alternate Email */}
+                  <span className="text-xs sm:text-sm font-semibold text-gray-600 pl-4 sm:pl-0">
+                    Primary Contact of Project Owner Email:
+                  </span>
+                  <input
+                    type="email"
+                    value={projectOwnerAlternateEmail}
+                    onChange={(e) => setProjectOwnerAlternateEmail(e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="Enter email"
+                    className={`text-xs sm:text-sm px-2 py-1 border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#2563eb] focus:border-transparent transition-all duration-200 ${
+                      isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""
+                    }`}
+                  />
                 </div>
 
                 {/* Divider */}
@@ -1407,7 +1504,22 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
                     )}
                   </span>
 
-                  {/* Row 2 - Primary Contact */}
+                  {/* Row 2 - Email */}
+                  <span className="text-xs sm:text-sm font-semibold text-gray-600 pl-4 sm:pl-0">
+                    Business Owner Email:
+                  </span>
+                  <input
+                    type="email"
+                    value={businessOwnerPrimaryEmail}
+                    onChange={(e) => setBusinessOwnerPrimaryEmail(e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="Enter email"
+                    className={`text-xs sm:text-sm px-2 py-1 border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#2563eb] focus:border-transparent transition-all duration-200 ${
+                      isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""
+                    }`}
+                  />
+
+                  {/* Row 3 - Primary Contact */}
                   <span className="text-xs sm:text-sm font-semibold text-gray-600 pl-4 sm:pl-0">
                     Primary Contact:
                   </span>
@@ -1418,6 +1530,21 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
                       </span>
                     )}
                   </span>
+
+                  {/* Row 4 - Alternate Email */}
+                  <span className="text-xs sm:text-sm font-semibold text-gray-600 pl-4 sm:pl-0">
+                    Primary Contact of Business Owner Email:
+                  </span>
+                  <input
+                    type="email"
+                    value={businessOwnerAlternateEmail}
+                    onChange={(e) => setBusinessOwnerAlternateEmail(e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="Enter email"
+                    className={`text-xs sm:text-sm px-2 py-1 border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#2563eb] focus:border-transparent transition-all duration-200 ${
+                      isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""
+                    }`}
+                  />
                 </div>
               </div>
             </div>

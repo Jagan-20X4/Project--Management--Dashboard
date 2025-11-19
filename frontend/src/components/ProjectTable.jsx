@@ -1,12 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Edit, Trash2 } from "lucide-react";
+import { updateProjectPriority } from "../api/projectAPI";
+import { toast } from "react-toastify";
 
-const ProjectTable = ({ projects, searchTerm, onEditStatus, onDelete, userRole = "admin" }) => {
+const ProjectTable = ({ projects, searchTerm, onEditStatus, onDelete, userRole = "admin", onUpdate }) => {
   const navigate = useNavigate();
   const isAdmin = userRole === "admin";
   const isHod = userRole === "hod";
+  const [updatingPriority, setUpdatingPriority] = useState({});
 
   // Calculate progress percentage
   const calculateProgress = (project) => {
@@ -48,18 +51,47 @@ const ProjectTable = ({ projects, searchTerm, onEditStatus, onDelete, userRole =
     return "Yet to Start";
   };
 
+  // Handle priority change
+  const handlePriorityChange = async (project, newPriority) => {
+    if (newPriority === project.priority) return;
+    
+    const projectId = project._id;
+    setUpdatingPriority(prev => ({ ...prev, [projectId]: true }));
+    
+    try {
+      await updateProjectPriority(projectId, newPriority, project.stages || []);
+      
+      // Update local state optimistically
+      if (onUpdate) {
+        onUpdate();
+      }
+      
+      toast.success("Priority updated successfully");
+    } catch (error) {
+      console.error("Error updating priority:", error);
+      toast.error(error?.response?.data?.error || "Failed to update priority");
+    } finally {
+      setUpdatingPriority(prev => {
+        const updated = { ...prev };
+        delete updated[projectId];
+        return updated;
+      });
+    }
+  };
+
   return (
     <div className="card-modern overflow-hidden">
       <div className="w-full overflow-x-auto">
         <table className="w-full table-fixed divide-y divide-gray-100">
           <thead className="bg-gray-50/50">
             <tr className="text-left text-[12px] font-semibold text-gray-600 uppercase tracking-wide">
-              <th className="px-4 py-3 w-[9%]">Project ID</th>
-              <th className="px-3 py-3 w-[16%]">Project Name</th>
+              <th className="px-3 py-3 w-[18%]">Project Name</th>
               <th className="px-4 py-3 w-[12%]">Department</th>
-              <th className="px-4 py-3 w-[12%]">Start Date</th>
-              <th className="px-4 py-3 w-[12%]">End Date</th>
-              <th className="px-3 py-3 w-[13%]">Overall Progress</th>
+              <th className="px-4 py-3 w-[12%]">Project Owner</th>
+              <th className="px-4 py-3 w-[10%]">Priority</th>
+              <th className="px-4 py-3 w-[11%]">Start Date</th>
+              <th className="px-4 py-3 w-[11%]">End Date</th>
+              <th className="px-3 py-3 w-[12%]">Overall Progress</th>
               <th className="px-4 py-3 w-[10%]">Status Summary</th>
               <th className="px-4 py-3 w-[8%]">Actions</th>
             </tr>
@@ -67,7 +99,7 @@ const ProjectTable = ({ projects, searchTerm, onEditStatus, onDelete, userRole =
           <tbody className="bg-white divide-y divide-gray-100">
             {projects.length === 0 ? (
               <tr>
-                    <td colSpan="8" className="px-6 py-12 text-center">
+                    <td colSpan="9" className="px-6 py-12 text-center">
                   <div className="flex flex-col items-center justify-center">
                     <p className="text-gray-400 text-sm mb-2">No projects found</p>
                     <p className="text-gray-300 text-xs">Try adjusting your search terms or filters</p>
@@ -88,14 +120,30 @@ const ProjectTable = ({ projects, searchTerm, onEditStatus, onDelete, userRole =
                       index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'
                               } hover:bg-[#2563eb]/5`}
                   >
-                    <td className="px-4 py-3 break-words">
-                      <span className="text-sm font-semibold text-[#111827]">{project.projectId}</span>
-                    </td>
                     <td className="px-3 py-3 break-words">
                       <span className="text-[13px] text-[#111827] leading-tight truncate block">{project.projectName}</span>
                     </td>
                     <td className="px-4 py-3 break-words">
                       <span className="text-sm text-gray-600 leading-tight">{project.department}</span>
+                    </td>
+                    <td className="px-4 py-3 break-words">
+                      <span className="text-sm text-gray-600 leading-tight">{project.projectOwner || "-"}</span>
+                    </td>
+                    <td className="px-4 py-3 break-words">
+                      {isAdmin ? (
+                        <select
+                          value={project.priority || "P3"}
+                          onChange={(e) => handlePriorityChange(project, e.target.value)}
+                          disabled={updatingPriority[project._id]}
+                          className="text-sm font-medium text-gray-700 leading-tight px-2 py-1 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <option value="P1">P1</option>
+                          <option value="P2">P2</option>
+                          <option value="P3">P3</option>
+                        </select>
+                      ) : (
+                        <span className="text-sm font-medium text-gray-700 leading-tight">{project.priority || "P3"}</span>
+                      )}
                     </td>
                     <td className="px-3 py-3 break-words">
                       <span className="text-sm text-gray-600">{project.startDate || "-"}</span>

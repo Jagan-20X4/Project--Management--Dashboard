@@ -57,7 +57,6 @@ const projectSchema = new mongoose.Schema({
   endDate: { type: String, default: "" },
   priority: { 
     type: String, 
-    enum: ["P1", "P2", "P3"],
     default: "P3"
   },
   overallProjectSummary: { type: String, default: "" },

@@ -120,14 +120,11 @@ const LandingPage = () => {
       filtered = projects.filter((p) => getOverallStatus(p) === "Delayed");
     }
 
-    // Apply search filter
+    // Apply search filter - only by department (partial match, case-insensitive)
     if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase();
+      const searchLower = searchTerm.toLowerCase().trim();
       filtered = filtered.filter((project) => {
-        return (
-          project.projectId.toLowerCase().includes(searchLower) ||
-          project.projectName.toLowerCase().includes(searchLower)
-        );
+        return project.department && project.department.toLowerCase().includes(searchLower);
       });
     }
 
@@ -262,7 +259,7 @@ const LandingPage = () => {
             <div className="flex-1 w-full md:w-auto">
               <input
                 type="text"
-                placeholder="Search by Project ID or Project Name..."
+                placeholder="Search by Department…"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="input-modern"
@@ -295,6 +292,7 @@ const LandingPage = () => {
               onEditStatus={handleEditStatus}
               onDelete={handleDelete}
               userRole={userRole}
+              onUpdate={fetchProjects}
             />
             {/* Pagination */}
             {filteredProjects.length > 0 && (
