@@ -1,15 +1,96 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, X } from "lucide-react";
 import { updateProjectPriority } from "../api/projectAPI";
 import { toast } from "react-toastify";
 
-const ProjectTable = ({ projects, searchTerm, onEditStatus, onDelete, userRole = "admin", onUpdate }) => {
+const ProjectTable = ({ 
+  projects, 
+  searchTerm, 
+  onEditStatus, 
+  onDelete, 
+  userRole = "admin", 
+  onUpdate,
+  allProjects = [],
+  departmentFilter = "",
+  projectOwnerFilter = "",
+  priorityFilter = "",
+  onDepartmentFilterChange,
+  onProjectOwnerFilterChange,
+  onPriorityFilterChange
+}) => {
   const navigate = useNavigate();
   const isAdmin = userRole === "admin";
   const isHod = userRole === "hod";
   const [updatingPriority, setUpdatingPriority] = useState({});
+
+  // Extract unique values for filters
+  const getUniqueDepartments = () => {
+    const departments = allProjects
+      .map((p) => p.department)
+      .filter((d) => d && d.trim() !== "");
+    return [...new Set(departments)].sort();
+  };
+
+  const getUniqueProjectOwners = () => {
+    // Normalize owners by trimming whitespace to handle duplicates like "Dattatray" vs "Dattatray "
+    const normalizedOwnersMap = new Map();
+    
+    allProjects.forEach((project) => {
+      if (project.projectOwner && project.projectOwner.trim() !== "") {
+        const normalized = project.projectOwner.trim();
+        // Store the first occurrence (or you could store the most common version)
+        if (!normalizedOwnersMap.has(normalized)) {
+          normalizedOwnersMap.set(normalized, project.projectOwner.trim());
+        }
+      }
+    });
+    
+    // Return unique, normalized owners sorted alphabetically
+    return Array.from(normalizedOwnersMap.values()).sort();
+  };
+
+  const getUniquePriorities = () => {
+    const priorities = allProjects
+      .map((p) => p.priority)
+      .filter((p) => p && p.trim() !== "");
+    return [...new Set(priorities)].sort();
+  };
+
+  // Filter dropdown component
+  const FilterDropdown = ({ value, onChange, options, placeholder, onClear }) => {
+    return (
+      <div className="relative flex items-center gap-1 w-full">
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="text-[11px] font-medium text-gray-700 leading-tight px-2 py-1.5 pr-6 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent transition-all duration-200 cursor-pointer w-full"
+          style={{ minWidth: '100px' }}
+        >
+          <option value="">{placeholder}</option>
+          {options.map((option) => (
+            <option key={option} value={option}>
+              {option}
+            </option>
+          ))}
+        </select>
+        {value && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onClear();
+            }}
+            className="absolute right-6 p-0.5 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-700 transition-colors duration-200 z-10"
+            title="Clear filter"
+            aria-label="Clear filter"
+          >
+            <X className="w-3 h-3" />
+          </button>
+        )}
+      </div>
+    );
+  };
 
   // Calculate progress percentage
   const calculateProgress = (project) => {
@@ -86,9 +167,42 @@ const ProjectTable = ({ projects, searchTerm, onEditStatus, onDelete, userRole =
           <thead className="bg-gray-50/50">
             <tr className="text-left text-[12px] font-semibold text-gray-600 uppercase tracking-wide">
               <th className="px-3 py-3 w-[18%]">Project Name</th>
-              <th className="px-4 py-3 w-[12%]">Department</th>
-              <th className="px-4 py-3 w-[12%]">Project Owner</th>
-              <th className="px-4 py-3 w-[10%]">Priority</th>
+              <th className="px-4 py-3 w-[12%]">
+                <div className="flex flex-col gap-1.5">
+                  <span>Department</span>
+                  <FilterDropdown
+                    value={departmentFilter}
+                    onChange={onDepartmentFilterChange}
+                    options={getUniqueDepartments()}
+                    placeholder="Filter"
+                    onClear={() => onDepartmentFilterChange("")}
+                  />
+                </div>
+              </th>
+              <th className="px-4 py-3 w-[12%]">
+                <div className="flex flex-col gap-1.5">
+                  <span>Project Owner</span>
+                  <FilterDropdown
+                    value={projectOwnerFilter}
+                    onChange={onProjectOwnerFilterChange}
+                    options={getUniqueProjectOwners()}
+                    placeholder="Filter"
+                    onClear={() => onProjectOwnerFilterChange("")}
+                  />
+                </div>
+              </th>
+              <th className="px-4 py-3 w-[10%]">
+                <div className="flex flex-col gap-1.5">
+                  <span>Priority</span>
+                  <FilterDropdown
+                    value={priorityFilter}
+                    onChange={onPriorityFilterChange}
+                    options={getUniquePriorities()}
+                    placeholder="Filter"
+                    onClear={() => onPriorityFilterChange("")}
+                  />
+                </div>
+              </th>
               <th className="px-4 py-3 w-[11%]">Start Date</th>
               <th className="px-4 py-3 w-[11%]">End Date</th>
               <th className="px-3 py-3 w-[12%]">Overall Progress</th>

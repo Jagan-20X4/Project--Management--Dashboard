@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { getAllProjects, deleteProject } from "../api/projectAPI";
 import ProjectTable from "../components/ProjectTable";
 import EditStatusModal from "../components/EditStatusModal";
 import { toast } from "react-toastify";
 import { LogOut } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
 const LandingPage = () => {
   const [projects, setProjects] = useState([]);
@@ -14,6 +15,9 @@ const LandingPage = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [filterType, setFilterType] = useState("all");
+  const [departmentFilter, setDepartmentFilter] = useState("");
+  const [projectOwnerFilter, setProjectOwnerFilter] = useState("");
+  const [priorityFilter, setPriorityFilter] = useState("");
   const navigate = useNavigate();
 
   // Get user role from localStorage
@@ -107,7 +111,48 @@ const LandingPage = () => {
     return "Yet to Start";
   };
 
-  // Filter projects based on filterType
+  // Extract unique values for filters
+  const getUniqueDepartments = () => {
+    const departments = projects
+      .map((p) => p.department)
+      .filter((d) => d && d.trim() !== "");
+    return [...new Set(departments)].sort();
+  };
+
+  const getUniqueProjectOwners = () => {
+    const owners = projects
+      .map((p) => p.projectOwner)
+      .filter((o) => o && o.trim() !== "");
+    return [...new Set(owners)].sort();
+  };
+
+  const getUniquePriorities = () => {
+    const priorities = projects
+      .map((p) => p.priority)
+      .filter((p) => p && p.trim() !== "");
+    return [...new Set(priorities)].sort();
+  };
+
+  // Calculate department-wise project counts (from all projects, not filtered)
+  const departmentProjectCounts = useMemo(() => {
+    const departmentMap = {};
+    
+    projects.forEach((project) => {
+      if (project.department && project.department.trim() !== "") {
+        departmentMap[project.department] = (departmentMap[project.department] || 0) + 1;
+      }
+    });
+
+    // Convert to array format for chart
+    return Object.entries(departmentMap)
+      .map(([department, count]) => ({
+        department,
+        count
+      }))
+      .sort((a, b) => b.count - a.count); // Sort by count descending
+  }, [projects]);
+
+  // Filter projects based on filterType, dropdown filters, and search
   const getFilteredProjects = () => {
     let filtered = projects;
 
@@ -120,11 +165,27 @@ const LandingPage = () => {
       filtered = projects.filter((p) => getOverallStatus(p) === "Delayed");
     }
 
-    // Apply search filter - only by department (partial match, case-insensitive)
+    // Apply dropdown filters (AND logic)
+    if (departmentFilter) {
+      filtered = filtered.filter((project) => project.department === departmentFilter);
+    }
+    if (projectOwnerFilter) {
+      // Normalize comparison to handle whitespace differences
+      const normalizedFilter = projectOwnerFilter.trim();
+      filtered = filtered.filter((project) => {
+        const normalizedOwner = project.projectOwner ? project.projectOwner.trim() : "";
+        return normalizedOwner === normalizedFilter;
+      });
+    }
+    if (priorityFilter) {
+      filtered = filtered.filter((project) => project.priority === priorityFilter);
+    }
+
+    // Apply search filter - only by project name (partial match, case-insensitive)
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase().trim();
       filtered = filtered.filter((project) => {
-        return project.department && project.department.toLowerCase().includes(searchLower);
+        return project.projectName && project.projectName.toLowerCase().includes(searchLower);
       });
     }
 
@@ -148,7 +209,7 @@ const LandingPage = () => {
   // Reset to page 1 when filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [filterType, searchTerm]);
+  }, [filterType, searchTerm, departmentFilter, projectOwnerFilter, priorityFilter]);
 
   // Handle filter change
   const handleFilterChange = (filter) => {
@@ -253,13 +314,110 @@ const LandingPage = () => {
           </div>
         </div>
 
+        {/* Department-Wise Project Distribution Chart */}
+        <div className="card-modern p-6 mb-6 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+          <h2 className="text-xl font-semibold text-[#111827] mb-4 flex items-center gap-2">
+            <span className="text-2xl">📊</span>
+            Department-Wise Project Distribution
+          </h2>
+          {departmentProjectCounts.length > 0 ? (
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart
+                data={departmentProjectCounts}
+                margin={{ top: 15, right: 20, left: 50, bottom: 40 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.3} />
+                <XAxis
+                  dataKey="department"
+                  angle={0}
+                  textAnchor="middle"
+                  tick={{ fill: '#6b7280', fontSize: 11, fontWeight: 500 }}
+                  interval={0}
+                />
+                <YAxis
+                  tick={{ fill: '#6b7280', fontSize: 11, fontWeight: 500 }}
+                  label={{ value: 'Number of Projects', angle: -90, position: 'insideLeft', style: { fill: '#6b7280', fontSize: 11, fontWeight: 500 } }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'rgba(17, 24, 39, 0.95)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '8px',
+                    color: '#ffffff',
+                    padding: '10px 12px',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)'
+                  }}
+                  labelStyle={{ color: '#ffffff', fontWeight: 600, marginBottom: '4px' }}
+                  itemStyle={{ color: '#ffffff' }}
+                  formatter={(value, name) => [value, 'Projects']}
+                  labelFormatter={(label) => `Department: ${label}`}
+                />
+                <Bar
+                  dataKey="count"
+                  radius={[8, 8, 0, 0]}
+                  strokeWidth={0}
+                  barSize={40}
+                >
+                  {departmentProjectCounts.map((entry, index) => {
+                    // Gradient colors: red/black neon vibe
+                    const colors = [
+                      'url(#colorGradient1)',
+                      'url(#colorGradient2)',
+                      'url(#colorGradient3)',
+                      'url(#colorGradient4)',
+                      'url(#colorGradient5)',
+                    ];
+                    return (
+                      <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+                    );
+                  })}
+                </Bar>
+                <defs>
+                  <linearGradient id="colorGradient1" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#ef4444" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="#991b1b" stopOpacity={0.8} />
+                  </linearGradient>
+                  <linearGradient id="colorGradient2" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#dc2626" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="#7f1d1d" stopOpacity={0.8} />
+                  </linearGradient>
+                  <linearGradient id="colorGradient3" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#b91c1c" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="#991b1b" stopOpacity={0.8} />
+                  </linearGradient>
+                  <linearGradient id="colorGradient4" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#991b1b" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="#7f1d1d" stopOpacity={0.8} />
+                  </linearGradient>
+                  <linearGradient id="colorGradient5" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#7f1d1d" stopOpacity={0.9} />
+                    <stop offset="100%" stopColor="#450a0a" stopOpacity={0.8} />
+                  </linearGradient>
+                </defs>
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-48 text-gray-400">
+              <p className="text-sm">No department data available</p>
+            </div>
+          )}
+          <div className="flex justify-center mt-6">
+            <button
+              onClick={() => navigate("/department-details")}
+              className="btn-primary px-6 py-2.5 text-sm font-medium"
+            >
+              Show More
+            </button>
+          </div>
+        </div>
+
         {/* Search and Add Project Section */}
         <div className="card-modern p-6 mb-6 animate-fade-in">
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
             <div className="flex-1 w-full md:w-auto">
               <input
                 type="text"
-                placeholder="Search by Department…"
+                placeholder="Search by Project Name…"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="input-modern"
@@ -293,6 +451,13 @@ const LandingPage = () => {
               onDelete={handleDelete}
               userRole={userRole}
               onUpdate={fetchProjects}
+              allProjects={projects}
+              departmentFilter={departmentFilter}
+              projectOwnerFilter={projectOwnerFilter}
+              priorityFilter={priorityFilter}
+              onDepartmentFilterChange={setDepartmentFilter}
+              onProjectOwnerFilterChange={setProjectOwnerFilter}
+              onPriorityFilterChange={setPriorityFilter}
             />
             {/* Pagination */}
             {filteredProjects.length > 0 && (

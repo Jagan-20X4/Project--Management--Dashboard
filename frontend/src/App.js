@@ -5,6 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import LandingPage from "./pages/LandingPage";
 import AddProjectPage from "./pages/AddProjectPage";
 import LoginPage from "./pages/LoginPage";
+import DepartmentDetailsPage from "./pages/DepartmentDetailsPage";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -56,6 +57,14 @@ function App() {
               <AdminRoute>
                 <AddProjectPage />
               </AdminRoute>
+            }
+          />
+          <Route
+            path="/department-details"
+            element={
+              <ProtectedRoute>
+                <DepartmentDetailsPage />
+              </ProtectedRoute>
             }
           />
           <Route path="*" element={<Navigate to="/login" replace />} />
