@@ -352,18 +352,40 @@ router.patch("/:id/stages", async (req, res) => {
       project.priority = req.body.priority;
     }
     
-    // Update email fields if provided
+    // Update project owner fields if provided
+    if (req.body.projectOwner !== undefined) {
+      project.projectOwner = req.body.projectOwner;
+    }
     if (req.body.projectOwnerPrimaryEmail !== undefined) {
       project.projectOwnerPrimaryEmail = req.body.projectOwnerPrimaryEmail;
+    }
+    if (req.body.projectOwnerPrimaryContact !== undefined) {
+      project.projectOwnerPrimaryContact = req.body.projectOwnerPrimaryContact;
     }
     if (req.body.projectOwnerAlternateEmail !== undefined) {
       project.projectOwnerAlternateEmail = req.body.projectOwnerAlternateEmail;
     }
+    
+    // Update business owner fields if provided
+    if (req.body.businessOwner !== undefined) {
+      project.businessOwner = req.body.businessOwner;
+    }
     if (req.body.businessOwnerPrimaryEmail !== undefined) {
       project.businessOwnerPrimaryEmail = req.body.businessOwnerPrimaryEmail;
     }
+    if (req.body.businessOwnerPrimaryContact !== undefined) {
+      project.businessOwnerPrimaryContact = req.body.businessOwnerPrimaryContact;
+    }
     if (req.body.businessOwnerAlternateEmail !== undefined) {
       project.businessOwnerAlternateEmail = req.body.businessOwnerAlternateEmail;
+    }
+    
+    // Update department fields if provided
+    if (req.body.department !== undefined) {
+      project.department = req.body.department;
+    }
+    if (req.body.techDepartment !== undefined) {
+      project.techDepartment = req.body.techDepartment;
     }
     
     await project.save();

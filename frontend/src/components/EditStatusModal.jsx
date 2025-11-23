@@ -20,10 +20,16 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [overallProjectSummary, setOverallProjectSummary] = useState("");
+  const [projectOwner, setProjectOwner] = useState("");
   const [projectOwnerPrimaryEmail, setProjectOwnerPrimaryEmail] = useState("");
+  const [projectOwnerPrimaryContact, setProjectOwnerPrimaryContact] = useState("");
   const [projectOwnerAlternateEmail, setProjectOwnerAlternateEmail] = useState("");
+  const [businessOwner, setBusinessOwner] = useState("");
   const [businessOwnerPrimaryEmail, setBusinessOwnerPrimaryEmail] = useState("");
+  const [businessOwnerPrimaryContact, setBusinessOwnerPrimaryContact] = useState("");
   const [businessOwnerAlternateEmail, setBusinessOwnerAlternateEmail] = useState("");
+  const [department, setDepartment] = useState("");
+  const [techDepartment, setTechDepartment] = useState("");
   const [loading, setLoading] = useState(false);
   const [logs, setLogs] = useState([]);
   const [pendingChanges, setPendingChanges] = useState([]);
@@ -32,10 +38,16 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
   const [initialEndDate, setInitialEndDate] = useState("");
   const [initialOverallProjectSummary, setInitialOverallProjectSummary] =
     useState("");
+  const [initialProjectOwner, setInitialProjectOwner] = useState("");
   const [initialProjectOwnerPrimaryEmail, setInitialProjectOwnerPrimaryEmail] = useState("");
+  const [initialProjectOwnerPrimaryContact, setInitialProjectOwnerPrimaryContact] = useState("");
   const [initialProjectOwnerAlternateEmail, setInitialProjectOwnerAlternateEmail] = useState("");
+  const [initialBusinessOwner, setInitialBusinessOwner] = useState("");
   const [initialBusinessOwnerPrimaryEmail, setInitialBusinessOwnerPrimaryEmail] = useState("");
+  const [initialBusinessOwnerPrimaryContact, setInitialBusinessOwnerPrimaryContact] = useState("");
   const [initialBusinessOwnerAlternateEmail, setInitialBusinessOwnerAlternateEmail] = useState("");
+  const [initialDepartment, setInitialDepartment] = useState("");
+  const [initialTechDepartment, setInitialTechDepartment] = useState("");
   const [highlightedFields, setHighlightedFields] = useState(new Set());
   const [recalculatedDateFields, setRecalculatedDateFields] = useState(
     new Set()
@@ -122,18 +134,30 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
       const projectStartDate = project.startDate || "";
       const projectEndDate = project.endDate || "";
       const projectSummary = project.overallProjectSummary || "";
+      const projectOwnerName = project.projectOwner || "";
       const projectOwnerEmail = project.projectOwnerPrimaryEmail || "";
+      const projectOwnerContact = project.projectOwnerPrimaryContact || "";
       const projectOwnerAltEmail = project.projectOwnerAlternateEmail || "";
+      const businessOwnerName = project.businessOwner || "";
       const businessOwnerEmail = project.businessOwnerPrimaryEmail || "";
+      const businessOwnerContact = project.businessOwnerPrimaryContact || "";
       const businessOwnerAltEmail = project.businessOwnerAlternateEmail || "";
+      const projectDepartment = project.department || "";
+      const projectTechDepartment = project.techDepartment || "";
 
       setStartDate(projectStartDate);
       setEndDate(projectEndDate);
       setOverallProjectSummary(projectSummary);
+      setProjectOwner(projectOwnerName);
       setProjectOwnerPrimaryEmail(projectOwnerEmail);
+      setProjectOwnerPrimaryContact(projectOwnerContact);
       setProjectOwnerAlternateEmail(projectOwnerAltEmail);
+      setBusinessOwner(businessOwnerName);
       setBusinessOwnerPrimaryEmail(businessOwnerEmail);
+      setBusinessOwnerPrimaryContact(businessOwnerContact);
       setBusinessOwnerAlternateEmail(businessOwnerAltEmail);
+      setDepartment(projectDepartment);
+      setTechDepartment(projectTechDepartment);
 
       // Initialize milestones for Development stage
       const developmentIndex = projectStages.findIndex(
@@ -212,10 +236,16 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
       setInitialStartDate(projectStartDate);
       setInitialEndDate(projectEndDate);
       setInitialOverallProjectSummary(projectSummary);
+      setInitialProjectOwner(projectOwnerName);
       setInitialProjectOwnerPrimaryEmail(projectOwnerEmail);
+      setInitialProjectOwnerPrimaryContact(projectOwnerContact);
       setInitialProjectOwnerAlternateEmail(projectOwnerAltEmail);
+      setInitialBusinessOwner(businessOwnerName);
       setInitialBusinessOwnerPrimaryEmail(businessOwnerEmail);
+      setInitialBusinessOwnerPrimaryContact(businessOwnerContact);
       setInitialBusinessOwnerAlternateEmail(businessOwnerAltEmail);
+      setInitialDepartment(projectDepartment);
+      setInitialTechDepartment(projectTechDepartment);
 
       // Clear pending changes when opening a new project
       setPendingChanges([]);
@@ -693,7 +723,21 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
       }
     }
 
-    // Check for changes to email fields
+    // Check for changes to project owner fields
+    if (initialProjectOwner !== projectOwner) {
+      const key = `Project Owner-N/A-${initialProjectOwner}-${projectOwner}`;
+      if (!changeKeys.has(key)) {
+        changeKeys.add(key);
+        allChanges.push({
+          id: Date.now() + Math.random(),
+          fieldName: "Project Owner",
+          previousValue: initialProjectOwner || "(empty)",
+          newValue: projectOwner || "(empty)",
+          stageName: "N/A",
+        });
+      }
+    }
+
     if (initialProjectOwnerPrimaryEmail !== projectOwnerPrimaryEmail) {
       const key = `Project Owner Primary Email-N/A-${initialProjectOwnerPrimaryEmail}-${projectOwnerPrimaryEmail}`;
       if (!changeKeys.has(key)) {
@@ -703,6 +747,20 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
           fieldName: "Project Owner Primary Email",
           previousValue: initialProjectOwnerPrimaryEmail || "(empty)",
           newValue: projectOwnerPrimaryEmail || "(empty)",
+          stageName: "N/A",
+        });
+      }
+    }
+
+    if (initialProjectOwnerPrimaryContact !== projectOwnerPrimaryContact) {
+      const key = `Project Owner Primary Contact-N/A-${initialProjectOwnerPrimaryContact}-${projectOwnerPrimaryContact}`;
+      if (!changeKeys.has(key)) {
+        changeKeys.add(key);
+        allChanges.push({
+          id: Date.now() + Math.random(),
+          fieldName: "Project Owner Primary Contact",
+          previousValue: initialProjectOwnerPrimaryContact || "(empty)",
+          newValue: projectOwnerPrimaryContact || "(empty)",
           stageName: "N/A",
         });
       }
@@ -722,6 +780,21 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
       }
     }
 
+    // Check for changes to business owner fields
+    if (initialBusinessOwner !== businessOwner) {
+      const key = `Business Owner-N/A-${initialBusinessOwner}-${businessOwner}`;
+      if (!changeKeys.has(key)) {
+        changeKeys.add(key);
+        allChanges.push({
+          id: Date.now() + Math.random(),
+          fieldName: "Business Owner",
+          previousValue: initialBusinessOwner || "(empty)",
+          newValue: businessOwner || "(empty)",
+          stageName: "N/A",
+        });
+      }
+    }
+
     if (initialBusinessOwnerPrimaryEmail !== businessOwnerPrimaryEmail) {
       const key = `Business Owner Primary Email-N/A-${initialBusinessOwnerPrimaryEmail}-${businessOwnerPrimaryEmail}`;
       if (!changeKeys.has(key)) {
@@ -736,6 +809,20 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
       }
     }
 
+    if (initialBusinessOwnerPrimaryContact !== businessOwnerPrimaryContact) {
+      const key = `Business Owner Primary Contact-N/A-${initialBusinessOwnerPrimaryContact}-${businessOwnerPrimaryContact}`;
+      if (!changeKeys.has(key)) {
+        changeKeys.add(key);
+        allChanges.push({
+          id: Date.now() + Math.random(),
+          fieldName: "Business Owner Primary Contact",
+          previousValue: initialBusinessOwnerPrimaryContact || "(empty)",
+          newValue: businessOwnerPrimaryContact || "(empty)",
+          stageName: "N/A",
+        });
+      }
+    }
+
     if (initialBusinessOwnerAlternateEmail !== businessOwnerAlternateEmail) {
       const key = `Business Owner Alternate Email-N/A-${initialBusinessOwnerAlternateEmail}-${businessOwnerAlternateEmail}`;
       if (!changeKeys.has(key)) {
@@ -745,6 +832,35 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
           fieldName: "Business Owner Alternate Email",
           previousValue: initialBusinessOwnerAlternateEmail || "(empty)",
           newValue: businessOwnerAlternateEmail || "(empty)",
+          stageName: "N/A",
+        });
+      }
+    }
+
+    // Check for changes to department fields
+    if (initialDepartment !== department) {
+      const key = `Department-N/A-${initialDepartment}-${department}`;
+      if (!changeKeys.has(key)) {
+        changeKeys.add(key);
+        allChanges.push({
+          id: Date.now() + Math.random(),
+          fieldName: "Department",
+          previousValue: initialDepartment || "(empty)",
+          newValue: department || "(empty)",
+          stageName: "N/A",
+        });
+      }
+    }
+
+    if (initialTechDepartment !== techDepartment) {
+      const key = `Tech Department-N/A-${initialTechDepartment}-${techDepartment}`;
+      if (!changeKeys.has(key)) {
+        changeKeys.add(key);
+        allChanges.push({
+          id: Date.now() + Math.random(),
+          fieldName: "Tech Department",
+          previousValue: initialTechDepartment || "(empty)",
+          newValue: techDepartment || "(empty)",
           stageName: "N/A",
         });
       }
@@ -873,10 +989,16 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
           [],
           overallProjectSummary,
           undefined,
+          projectOwner,
           projectOwnerPrimaryEmail,
+          projectOwnerPrimaryContact,
           projectOwnerAlternateEmail,
+          businessOwner,
           businessOwnerPrimaryEmail,
-          businessOwnerAlternateEmail
+          businessOwnerPrimaryContact,
+          businessOwnerAlternateEmail,
+          department,
+          techDepartment
         );
         onUpdate();
         setLoading(false);
@@ -930,10 +1052,16 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
         logsToSave,
         overallProjectSummary,
         undefined,
+        projectOwner,
         projectOwnerPrimaryEmail,
+        projectOwnerPrimaryContact,
         projectOwnerAlternateEmail,
+        businessOwner,
         businessOwnerPrimaryEmail,
-        businessOwnerAlternateEmail
+        businessOwnerPrimaryContact,
+        businessOwnerAlternateEmail,
+        department,
+        techDepartment
       );
       console.log("Project and logs saved successfully");
 
@@ -949,10 +1077,16 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
       setInitialStartDate(startDate);
       setInitialEndDate(endDate);
       setInitialOverallProjectSummary(overallProjectSummary);
+      setInitialProjectOwner(projectOwner);
       setInitialProjectOwnerPrimaryEmail(projectOwnerPrimaryEmail);
+      setInitialProjectOwnerPrimaryContact(projectOwnerPrimaryContact);
       setInitialProjectOwnerAlternateEmail(projectOwnerAlternateEmail);
+      setInitialBusinessOwner(businessOwner);
       setInitialBusinessOwnerPrimaryEmail(businessOwnerPrimaryEmail);
+      setInitialBusinessOwnerPrimaryContact(businessOwnerPrimaryContact);
       setInitialBusinessOwnerAlternateEmail(businessOwnerAlternateEmail);
+      setInitialDepartment(department);
+      setInitialTechDepartment(techDepartment);
 
       // Update milestone counters based on current milestones
       stages.forEach((stage, stageIndex) => {
@@ -1333,6 +1467,52 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
                   />
                 </div>
               </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4">
+                <div>
+                  <label className="block text-xs sm:text-sm font-semibold text-[#111827] mb-1.5 sm:mb-2">
+                    Department
+                  </label>
+                  <select
+                    value={department}
+                    onChange={(e) => setDepartment(e.target.value)}
+                    disabled={isReadOnly}
+                    className={`input-modern text-sm sm:text-base ${
+                      isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""
+                    }`}
+                  >
+                    <option value="">Select Department</option>
+                    <option value="IT">IT</option>
+                    <option value="Finance">Finance</option>
+                    <option value="HR">HR</option>
+                    <option value="Operations">Operations</option>
+                    <option value="Marketing">Marketing</option>
+                    <option value="Sales">Sales</option>
+                    <option value="Engineering">Engineering</option>
+                    <option value="Product">Product</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs sm:text-sm font-semibold text-[#111827] mb-1.5 sm:mb-2">
+                    Tech Department
+                  </label>
+                  <select
+                    value={techDepartment}
+                    onChange={(e) => setTechDepartment(e.target.value)}
+                    disabled={isReadOnly}
+                    className={`input-modern text-sm sm:text-base ${
+                      isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""
+                    }`}
+                  >
+                    <option value="">Select Tech Department</option>
+                    <option value="ERP">ERP</option>
+                    <option value="DATA">DATA</option>
+                    <option value="CISO">CISO</option>
+                    <option value="HIS">HIS</option>
+                    <option value="Infrastrucure">Infrastrucure</option>
+                    <option value="GTM">GTM</option>
+                  </select>
+                </div>
+              </div>
               <div className="flex justify-end">
                 {!isReadOnly && (
                   <button
@@ -1436,13 +1616,16 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
                   <span className="text-sm sm:text-base font-semibold text-[#111827]">
                     Project Owner:
                   </span>
-                  <span className="text-sm sm:text-base text-gray-700">
-                    {project.projectOwner || (
-                      <span className="text-gray-400 italic">
-                        Not specified
-                      </span>
-                    )}
-                  </span>
+                  <input
+                    type="text"
+                    value={projectOwner}
+                    onChange={(e) => setProjectOwner(e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="Enter project owner name"
+                    className={`text-sm sm:text-base px-2 py-1 border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#2563eb] focus:border-transparent transition-all duration-200 ${
+                      isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""
+                    }`}
+                  />
 
                   {/* Row 2 - Email */}
                   <span className="text-xs sm:text-sm font-semibold text-gray-600 pl-4 sm:pl-0">
@@ -1463,13 +1646,16 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
                   <span className="text-xs sm:text-sm font-semibold text-gray-600 pl-4 sm:pl-0">
                     Primary Contact:
                   </span>
-                  <span className="text-xs sm:text-sm text-gray-700">
-                    {project.projectOwnerPrimaryContact || (
-                      <span className="text-gray-400 italic">
-                        Not specified
-                      </span>
-                    )}
-                  </span>
+                  <input
+                    type="text"
+                    value={projectOwnerPrimaryContact}
+                    onChange={(e) => setProjectOwnerPrimaryContact(e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="Enter primary contact number"
+                    className={`text-xs sm:text-sm px-2 py-1 border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#2563eb] focus:border-transparent transition-all duration-200 ${
+                      isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""
+                    }`}
+                  />
 
                   {/* Row 4 - Alternate Email */}
                   <span className="text-xs sm:text-sm font-semibold text-gray-600 pl-4 sm:pl-0">
@@ -1496,13 +1682,16 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
                   <span className="text-sm sm:text-base font-semibold text-[#111827]">
                     Business Owner:
                   </span>
-                  <span className="text-sm sm:text-base text-gray-700">
-                    {project.businessOwner || (
-                      <span className="text-gray-400 italic">
-                        Not specified
-                      </span>
-                    )}
-                  </span>
+                  <input
+                    type="text"
+                    value={businessOwner}
+                    onChange={(e) => setBusinessOwner(e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="Enter business owner name"
+                    className={`text-sm sm:text-base px-2 py-1 border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#2563eb] focus:border-transparent transition-all duration-200 ${
+                      isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""
+                    }`}
+                  />
 
                   {/* Row 2 - Email */}
                   <span className="text-xs sm:text-sm font-semibold text-gray-600 pl-4 sm:pl-0">
@@ -1523,13 +1712,16 @@ const EditStatusModal = ({ project, isOpen, onClose, onUpdate, userRole = "admin
                   <span className="text-xs sm:text-sm font-semibold text-gray-600 pl-4 sm:pl-0">
                     Primary Contact:
                   </span>
-                  <span className="text-xs sm:text-sm text-gray-700">
-                    {project.businessOwnerPrimaryContact || (
-                      <span className="text-gray-400 italic">
-                        Not specified
-                      </span>
-                    )}
-                  </span>
+                  <input
+                    type="text"
+                    value={businessOwnerPrimaryContact}
+                    onChange={(e) => setBusinessOwnerPrimaryContact(e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="Enter primary contact number"
+                    className={`text-xs sm:text-sm px-2 py-1 border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#2563eb] focus:border-transparent transition-all duration-200 ${
+                      isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""
+                    }`}
+                  />
 
                   {/* Row 4 - Alternate Email */}
                   <span className="text-xs sm:text-sm font-semibold text-gray-600 pl-4 sm:pl-0">

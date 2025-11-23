@@ -17,17 +17,23 @@ export const createProject = async (projectData) => {
   return response.data;
 };
 
-export const updateProjectStages = async (id, stages, startDate, endDate, logs = [], overallProjectSummary = undefined, priority = undefined, projectOwnerPrimaryEmail = undefined, projectOwnerAlternateEmail = undefined, businessOwnerPrimaryEmail = undefined, businessOwnerAlternateEmail = undefined) => {
+export const updateProjectStages = async (id, stages, startDate, endDate, logs = [], overallProjectSummary = undefined, priority = undefined, projectOwner = undefined, projectOwnerPrimaryEmail = undefined, projectOwnerPrimaryContact = undefined, projectOwnerAlternateEmail = undefined, businessOwner = undefined, businessOwnerPrimaryEmail = undefined, businessOwnerPrimaryContact = undefined, businessOwnerAlternateEmail = undefined, department = undefined, techDepartment = undefined) => {
   const response = await axios.patch(`${API_URL}/${id}/stages`, {
     stages,
     startDate,
     endDate,
     overallProjectSummary,
     priority,
+    projectOwner,
     projectOwnerPrimaryEmail,
+    projectOwnerPrimaryContact,
     projectOwnerAlternateEmail,
+    businessOwner,
     businessOwnerPrimaryEmail,
+    businessOwnerPrimaryContact,
     businessOwnerAlternateEmail,
+    department,
+    techDepartment,
     logs
   });
   return response.data;
